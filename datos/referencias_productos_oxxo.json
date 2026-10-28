@@ -1,0 +1,412 @@
+{
+  "consulta": "2026-10-21",
+  "moneda": "MXN",
+  "fuente": "Catálogo oficial de promociones de OXXO; páginas 1 a 5",
+  "tipo_precio": "Precio promocional de referencia; si unidades_oferta es mayor a 1, se divide el importe entre esas unidades. No es el precio normal unitario de OXXO.",
+  "codigos": "Códigos internos SICOV, no códigos de barras del fabricante.",
+  "existencias": "No se crearon entradas ni cantidades ficticias.",
+  "condiciones": "La oferta original puede exigir compras múltiples y tener restricciones de fecha y disponibilidad. La carga no crea promociones automáticas nuevas.",
+  "respaldo": "C:\\Users\\Davd_\\eclipse-workspace\\SICOV\\respaldos\\productos-oxxo-2026-10-21T22-25-13-276Z",
+  "productos": [
+    {
+      "codigo": "900001",
+      "nombre": "Detergente 123 Aloe Vera 800 g",
+      "precio_cargado_mxn": "22.00",
+      "importe_oferta_mxn": 22,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900002",
+      "nombre": "Detergente 123 Fresca Blancura 800 g",
+      "precio_cargado_mxn": "22.00",
+      "importe_oferta_mxn": 22,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900003",
+      "nombre": "Papel higiénico Azalea Original 4 rollos 350 hojas",
+      "precio_cargado_mxn": "22.00",
+      "importe_oferta_mxn": 22,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900004",
+      "nombre": "Papel higiénico Azalea con aroma 4 rollos 350 hojas",
+      "precio_cargado_mxn": "22.00",
+      "importe_oferta_mxn": 22,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900005",
+      "nombre": "Atún Dolores en agua 130 g",
+      "precio_cargado_mxn": "18.50",
+      "importe_oferta_mxn": 18.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900006",
+      "nombre": "Atún Dolores en aceite 130 g",
+      "precio_cargado_mxn": "18.50",
+      "importe_oferta_mxn": 18.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900007",
+      "nombre": "Cloralex Aromas Floral 950 ml",
+      "precio_cargado_mxn": "18.50",
+      "importe_oferta_mxn": 18.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900008",
+      "nombre": "Cloralex Rendidor 950 ml",
+      "precio_cargado_mxn": "18.50",
+      "importe_oferta_mxn": 18.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900009",
+      "nombre": "Arroz La Posada 900 g",
+      "precio_cargado_mxn": "13.00",
+      "importe_oferta_mxn": 26,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900010",
+      "nombre": "Lavatrastes Salvo líquido Limón 500 ml",
+      "precio_cargado_mxn": "31.00",
+      "importe_oferta_mxn": 31,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900011",
+      "nombre": "Papel higiénico Premier 6 rollos 225 hojas dobles",
+      "precio_cargado_mxn": "25.00",
+      "importe_oferta_mxn": 25,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900012",
+      "nombre": "Fabuloso Fresca Lavanda 1 L",
+      "precio_cargado_mxn": "33.00",
+      "importe_oferta_mxn": 33,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900013",
+      "nombre": "Fabuloso Mar Fresco 1 L",
+      "precio_cargado_mxn": "33.00",
+      "importe_oferta_mxn": 33,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=1"
+    },
+    {
+      "codigo": "900014",
+      "nombre": "Detergente líquido Foca 1 L",
+      "precio_cargado_mxn": "36.50",
+      "importe_oferta_mxn": 36.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=2"
+    },
+    {
+      "codigo": "900015",
+      "nombre": "Boing Mango 500 ml",
+      "precio_cargado_mxn": "22.00",
+      "importe_oferta_mxn": 44,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=2"
+    },
+    {
+      "codigo": "900016",
+      "nombre": "Monster Energy Original 473 ml",
+      "precio_cargado_mxn": "37.00",
+      "importe_oferta_mxn": 74,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=2"
+    },
+    {
+      "codigo": "900017",
+      "nombre": "Monster Energy Ultra 473 ml",
+      "precio_cargado_mxn": "37.00",
+      "importe_oferta_mxn": 74,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=2"
+    },
+    {
+      "codigo": "900018",
+      "nombre": "Electrolit Uva 625 ml",
+      "precio_cargado_mxn": "26.50",
+      "importe_oferta_mxn": 53,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=2"
+    },
+    {
+      "codigo": "900019",
+      "nombre": "Electrolit Fresa 625 ml",
+      "precio_cargado_mxn": "26.50",
+      "importe_oferta_mxn": 53,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=2"
+    },
+    {
+      "codigo": "900020",
+      "nombre": "Electrolit Manzana 625 ml",
+      "precio_cargado_mxn": "26.50",
+      "importe_oferta_mxn": 53,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=2"
+    },
+    {
+      "codigo": "900021",
+      "nombre": "Clamato Original 946 ml",
+      "precio_cargado_mxn": "50.00",
+      "importe_oferta_mxn": 50,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=2"
+    },
+    {
+      "codigo": "900022",
+      "nombre": "Galletas Oreo Original charola 307.8 g",
+      "precio_cargado_mxn": "39.00",
+      "importe_oferta_mxn": 39,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=3"
+    },
+    {
+      "codigo": "900023",
+      "nombre": "Jumex Mango 960 ml",
+      "precio_cargado_mxn": "26.00",
+      "importe_oferta_mxn": 52,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=3"
+    },
+    {
+      "codigo": "900024",
+      "nombre": "Jumex Durazno 960 ml",
+      "precio_cargado_mxn": "26.00",
+      "importe_oferta_mxn": 52,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=3"
+    },
+    {
+      "codigo": "900025",
+      "nombre": "Jumex Manzana 960 ml",
+      "precio_cargado_mxn": "26.00",
+      "importe_oferta_mxn": 52,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=3"
+    },
+    {
+      "codigo": "900026",
+      "nombre": "Jumex Naranja 960 ml",
+      "precio_cargado_mxn": "26.00",
+      "importe_oferta_mxn": 52,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=3"
+    },
+    {
+      "codigo": "900027",
+      "nombre": "Leche evaporada Carnation 360 g",
+      "precio_cargado_mxn": "21.00",
+      "importe_oferta_mxn": 42,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=3"
+    },
+    {
+      "codigo": "900028",
+      "nombre": "Media crema Nestlé 225 g",
+      "precio_cargado_mxn": "21.00",
+      "importe_oferta_mxn": 42,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=3"
+    },
+    {
+      "codigo": "900029",
+      "nombre": "Suavitel Aroma de Lilas 700 ml",
+      "precio_cargado_mxn": "20.00",
+      "importe_oferta_mxn": 20,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=3"
+    },
+    {
+      "codigo": "900030",
+      "nombre": "Mayonesa McCormick 468 g",
+      "precio_cargado_mxn": "53.00",
+      "importe_oferta_mxn": 53,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900031",
+      "nombre": "Detergente Ariel Regular en polvo 750 g",
+      "precio_cargado_mxn": "37.00",
+      "importe_oferta_mxn": 37,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900032",
+      "nombre": "Frijoles refritos La Sierra Bayos 430 g",
+      "precio_cargado_mxn": "12.50",
+      "importe_oferta_mxn": 12.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900033",
+      "nombre": "Frijoles refritos La Sierra Negros 430 g",
+      "precio_cargado_mxn": "12.50",
+      "importe_oferta_mxn": 12.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900034",
+      "nombre": "Agua mineral Peñafiel 2 L",
+      "precio_cargado_mxn": "35.00",
+      "importe_oferta_mxn": 35,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900035",
+      "nombre": "Agua mineral Peñafiel Sifón 1.75 L",
+      "precio_cargado_mxn": "35.00",
+      "importe_oferta_mxn": 35,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900036",
+      "nombre": "Cereal Kellogg's Choco Krispis 290 g",
+      "precio_cargado_mxn": "48.00",
+      "importe_oferta_mxn": 48,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900037",
+      "nombre": "Cereal Kellogg's Zucaritas 300 g",
+      "precio_cargado_mxn": "48.00",
+      "importe_oferta_mxn": 48,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900038",
+      "nombre": "Tajín Clásico Mini 10 g",
+      "precio_cargado_mxn": "10.00",
+      "importe_oferta_mxn": 10,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900039",
+      "nombre": "Paleta Rocka Leta Original",
+      "precio_cargado_mxn": "14.00",
+      "importe_oferta_mxn": 14,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900040",
+      "nombre": "Kinder Sorpresa 20 g",
+      "precio_cargado_mxn": "39.00",
+      "importe_oferta_mxn": 39,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=4"
+    },
+    {
+      "codigo": "900041",
+      "nombre": "Lavatrastes Axion líquido 900 ml",
+      "precio_cargado_mxn": "59.00",
+      "importe_oferta_mxn": 59,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900042",
+      "nombre": "Lavatrastes Axion Limón 640 ml",
+      "precio_cargado_mxn": "40.00",
+      "importe_oferta_mxn": 40,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900043",
+      "nombre": "Pinol Original 750 ml",
+      "precio_cargado_mxn": "23.50",
+      "importe_oferta_mxn": 23.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900044",
+      "nombre": "Jabón Palmolive Naturals Aloe y Olive 120 g",
+      "precio_cargado_mxn": "20.00",
+      "importe_oferta_mxn": 20,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900045",
+      "nombre": "Jabón Palmolive Neutro Balance 120 g",
+      "precio_cargado_mxn": "30.00",
+      "importe_oferta_mxn": 30,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900046",
+      "nombre": "Mayonesa Best Foods 433 g",
+      "precio_cargado_mxn": "74.00",
+      "importe_oferta_mxn": 74,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900047",
+      "nombre": "Nugs Chocolate 20 g",
+      "precio_cargado_mxn": "10.00",
+      "importe_oferta_mxn": 10,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900048",
+      "nombre": "Cereal Nestlé Nesquik 100 g",
+      "precio_cargado_mxn": "10.00",
+      "importe_oferta_mxn": 20,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900049",
+      "nombre": "Cereal Nestlé Trix 100 g",
+      "precio_cargado_mxn": "10.00",
+      "importe_oferta_mxn": 20,
+      "unidades_oferta": 2,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    },
+    {
+      "codigo": "900050",
+      "nombre": "Clorets Original 2.8 g",
+      "precio_cargado_mxn": "2.50",
+      "importe_oferta_mxn": 2.5,
+      "unidades_oferta": 1,
+      "fuente_url": "https://www.oxxo.com/promociones?page=5"
+    }
+  ]
+}
