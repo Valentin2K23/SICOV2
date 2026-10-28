@@ -1,0 +1,13 @@
+# Archivos compilados
+bin/
+*.class
+
+# Archivos temporales
+*.log
+*.tmp
+
+# Sistema operativo
+.DS_Store
+
+# Configuraciones locales de Eclipse
+.settings/
