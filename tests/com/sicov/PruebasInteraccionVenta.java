@@ -131,6 +131,61 @@ public final class PruebasInteraccionVenta {
         comprobar(controlador.venta.vacia() && controlador.cobro.recibido().signum() == 0,
                 "Cerrar el ticket mixto deja lista la siguiente venta");
     }
+    private static void probarImporte() throws Exception {
+        Path directorio = Files.createTempDirectory("sicov-importe-");
+        ContextoAplicacion contexto = new ContextoAplicacion(directorio);
+        Producto huevo = new Producto("HP", "Huevo por kilogramo", new BigDecimal("38"),
+                "Abarrotes", UnidadVenta.KILOGRAMO, true);
+        contexto.guardarProducto(huevo, false);
+        BigDecimal peso = PanelCantidad.convertir(huevo, new BigDecimal("20"), "pesos");
+        PanelVentas panel = new PanelVentas(contexto);
+        JTextField codigo = campo(panel, "codigo", JTextField.class);
+        JTextField cantidad = campo(panel, "cantidad", JTextField.class);
+        VentaControlador controlador = campo(panel, "controlador", VentaControlador.class);
+        JList<?> lista = campo(panel, "lista", JList.class);
+        codigo.setText("HP*" + peso.toPlainString()); codigo.postActionEvent();
+        comprobar(controlador.total().compareTo(new BigDecimal("20.00")) == 0,
+                "Veinte pesos de huevo a 38 por kilo conservan los veinte pesos en el carrito");
+        comprobar(cantidad.getText().equals(UI.cantidad(peso.movePointRight(3))),
+                "El editor conserva todos los decimales del peso capturado por importe");
+        comprobar(UI.medida(peso, UnidadVenta.KILOGRAMO).equals("≈ 526.316 g"),
+                "La etiqueta aproxima el peso de forma legible sin modificar la cantidad editable");
+        panel.activarAtajos(false);
+        comprobar(atajo(panel, lista, KeyEvent.VK_B, 'b', 0) == null
+                        && atajo(panel, lista, KeyEvent.VK_ADD, '+', 0) == null
+                        && atajo(panel, lista, KeyEvent.VK_DELETE, KeyEvent.CHAR_UNDEFINED, 0) == null,
+                "El menú de Gestión bloquea la búsqueda y las modificaciones por atajo de la venta de fondo");
+        panel.activarAtajos(true);
+        comprobar(atajo(panel, codigo, KeyEvent.VK_B, 'b', 0) != null,
+                "Cerrar Gestión restablece los atajos de venta");
+        cantidad.postActionEvent();
+        comprobar(detalle(controlador, "HP").cantidad().compareTo(peso) == 0
+                        && controlador.total().compareTo(new BigDecimal("20.00")) == 0,
+                "Confirmar el editor sin cambios conserva el peso y los veinte pesos completos");
+        lista.setSize(700, 100); papelera(lista);
+        comprobar(controlador.venta.vacia(), "Eliminar el huevo retira su importe del carrito");
+        campo(panel, "deshacer", JButton.class).doClick();
+        comprobar(detalle(controlador, "HP").cantidad().compareTo(peso) == 0
+                        && controlador.total().compareTo(new BigDecimal("20.00")) == 0,
+                "Deshacer recupera el peso preciso y el importe solicitado");
+        PanelCobro cobro = campo(panel, "cobro", PanelCobro.class);
+        cobro.efectivo.setText("20");
+        comprobar(boton(cobro, "Confirmar pago y ver ticket").isEnabled(),
+                "Veinte pesos de efectivo cubren el huevo vendido por veinte pesos");
+        boton(cobro, "$20").doClick();
+        MovimientoInventario venta = controlador.confirmar(false);
+        comprobar(venta.total().compareTo(new BigDecimal("20.00")) == 0
+                        && venta.recibido().compareTo(new BigDecimal("20.00")) == 0
+                        && venta.cambio().signum() == 0,
+                "El cobro guarda total y efectivo de veinte pesos con cambio cero");
+        comprobar(PanelTicket.texto(venta).contains("TOTAL:    $20.00")
+                        && PanelTicket.texto(venta).contains("CAMBIO:   $0.00"),
+                "El ticket presenta el importe solicitado sin perder ni devolver un centavo");
+        MovimientoInventario guardada = new ContextoAplicacion(directorio).registros().get(0);
+        comprobar(guardada.detalles().get(0).cantidad().compareTo(peso) == 0
+                        && guardada.total().compareTo(new BigDecimal("20.00")) == 0,
+                "Reabrir los archivos conserva el peso preciso y los veinte pesos cobrados");
+    }
     public static void main(String[] args) throws Exception {
         ContextoAplicacion contexto = new ContextoAplicacion(Files.createTempDirectory("sicov-interacciones-"));
         contexto.guardarProducto(new Producto("123", "Leche", new BigDecimal("25"), "Lácteos", UnidadVenta.PIEZA, false), false);
@@ -138,6 +193,7 @@ public final class PruebasInteraccionVenta {
         SwingUtilities.invokeAndWait(() -> {
             try {
                 probarGranel();
+                probarImporte();
                 PanelVentas panel = new PanelVentas(contexto) {
                     @Override public boolean isShowing() { return true; }
                 };

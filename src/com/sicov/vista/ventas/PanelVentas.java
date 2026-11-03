@@ -43,6 +43,7 @@ public class PanelVentas extends JPanel {
     private final JLabel mensaje = new JLabel();
     private final Timer temporizador;
     private boolean refrescando, consumirCaracter, confirmando, enterPresionado;
+    private boolean atajosActivos = true;
     private JDialog dialogoCobro, dialogoTicket;
     private final JButton pagar = UI.primario("Pagar", this::abrirCobro);
     private final KeyEventDispatcher atajo = this::tecla;
@@ -98,7 +99,7 @@ public class PanelVentas extends JPanel {
         JScrollPane desplazamiento = new JScrollPane(lista); desplazamiento.setBorder(BorderFactory.createEmptyBorder());
         desplazamiento.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         contenidoVenta.add(desplazamiento, "productos");
-        JPanel vacio = new JPanel(new GridBagLayout()); vacio.setBackground(Color.WHITE);
+        JPanel vacio = new FondoCarrito(); vacio.setBackground(Color.WHITE);
         JPanel bienvenida = new JPanel(new GridLayout(0, 1, 0, 12)); bienvenida.setOpaque(false);
         JLabel tituloVacio = UI.titulo("Todo listo para vender"); tituloVacio.setHorizontalAlignment(SwingConstants.CENTER);
         bienvenida.add(tituloVacio);
@@ -194,6 +195,7 @@ public class PanelVentas extends JPanel {
         enfocarCodigo();
     }
     public boolean hayVentaPendiente() { return !controlador.venta.vacia() && !controlador.tieneTicketPendiente(); }
+    public void activarAtajos(boolean activos) { atajosActivos = activos; }
     public void enfocarCodigo() { SwingUtilities.invokeLater(codigo::requestFocusInWindow); }
     @Override public void addNotify() { super.addNotify(); KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(atajo); }
     @Override public void removeNotify() { KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(atajo); super.removeNotify(); }
@@ -230,7 +232,7 @@ public class PanelVentas extends JPanel {
         e.consume(); return true;
     }
     private Runnable accionAtajo(KeyEvent e) {
-        if (controlador.tieneTicketPendiente() || (e.getModifiersEx() &
+        if (!atajosActivos || controlador.tieneTicketPendiente() || (e.getModifiersEx() &
                 (InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK | InputEvent.META_DOWN_MASK)) != 0) return null;
         Component foco = e.getComponent();
         if (foco instanceof javax.swing.text.JTextComponent texto
@@ -420,6 +422,25 @@ public class PanelVentas extends JPanel {
     private void mostrarAviso(String texto) {
         mensaje.setText(texto); aviso.setVisible(true); temporizador.restart(); revalidate();
     }
+    /** Marca de agua del estado vacío; conserva los textos por encima del dibujo. */
+    private static class FondoCarrito extends JPanel {
+        FondoCarrito() { super(new GridBagLayout()); }
+        @Override protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D dibujo = (Graphics2D) g.create();
+            dibujo.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            double escala = Math.max(0, Math.min(320, Math.min(getWidth(), getHeight()) - 32)) / 320.0;
+            dibujo.translate((getWidth() - 320 * escala) / 2, (getHeight() - 280 * escala) / 2);
+            dibujo.scale(escala, escala); dibujo.setColor(new Color(235, 244, 238));
+            dibujo.setStroke(new BasicStroke(12, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            dibujo.drawPolyline(new int[] {24, 58, 94, 260}, new int[] {30, 30, 214, 214}, 4);
+            dibujo.drawPolyline(new int[] {66, 292, 264, 86}, new int[] {70, 70, 174, 174}, 4);
+            dibujo.drawLine(123, 78, 135, 166); dibujo.drawLine(193, 78, 193, 166);
+            dibujo.drawLine(78, 122, 278, 122);
+            dibujo.drawOval(105, 242, 24, 24); dibujo.drawOval(234, 242, 24, 24);
+            dibujo.dispose();
+        }
+    }
     /** Dos columnas de tarjetas: cuatro visibles y hasta cuatro más al desplazarse. */
     private static class PanelRapidos extends JPanel implements Scrollable {
         private int altoTarjeta = 90;
@@ -452,8 +473,8 @@ public class PanelVentas extends JPanel {
         private final ContextoAplicacion contexto;
         FilaProducto(ContextoAplicacion contexto) {
             super(new BorderLayout(12, 0)); this.contexto = contexto; setBorder(BorderFactory.createEmptyBorder(9, 8, 9, 8));
-            medida.setPreferredSize(new Dimension(68, 44)); medida.setOpaque(true);
-            medida.setFont(medida.getFont().deriveFont(Font.BOLD, 15f));
+            medida.setPreferredSize(new Dimension(104, 44)); medida.setOpaque(true);
+            medida.setFont(medida.getFont().deriveFont(Font.BOLD, 14f));
             JPanel identificacion = new JPanel(new BorderLayout(6, 0)); identificacion.setOpaque(false);
             identificacion.add(foto, BorderLayout.WEST); identificacion.add(medida); add(identificacion, BorderLayout.WEST);
             JPanel texto = new JPanel(new GridLayout(0, 1, 0, 2)); texto.setOpaque(false);

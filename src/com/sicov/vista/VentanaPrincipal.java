@@ -6,12 +6,19 @@ import com.sicov.vista.promociones.PanelPromociones;
 import com.sicov.vista.ventas.PanelVentas;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Path2D;
 import java.util.ArrayDeque;
 import javax.swing.*;
 
 public class VentanaPrincipal extends JFrame {
     private final CardLayout tarjetas = new CardLayout();
     private final JPanel contenido = new JPanel(tarjetas);
+    private final JPanel menuGestion = new JPanel(new BorderLayout()) {
+        @Override protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            g.setColor(new Color(0, 0, 0, 55)); g.fillRect(0, 0, getWidth(), getHeight());
+        }
+    };
     private final ArrayDeque<Runnable> historial = new ArrayDeque<>();
     private final KeyEventDispatcher atajoRegreso = this::teclaRegreso;
     private boolean escapePresionado;
@@ -19,31 +26,54 @@ public class VentanaPrincipal extends JFrame {
     private final PanelVentas ventas;
     private final PanelCategorias categorias;
     private final JButton botonVentas = UI.boton("Volver a ventas", () -> navegar("ventas"));
-    private final JButton botonGestion = UI.boton("Gestión", () -> navegar("gestion"));
+    private final JButton botonGestion = UI.boton("Gestión", () -> mostrarGestion(!menuGestion.isVisible()));
     private final JButton botonRegresar = UI.boton("← Regresar · Esc", this::regresar);
     public VentanaPrincipal(ContextoAplicacion contexto) {
         super("SICOV"); setLayout(new BorderLayout());
-        JPanel cabecera = new JPanel(new BorderLayout()); cabecera.setBackground(UI.AZUL);
-        JLabel marca = new JLabel("SICOV"); marca.setForeground(Color.WHITE); marca.setFont(marca.getFont().deriveFont(Font.BOLD, 26f));
-        JPanel identidad = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 0)); identidad.setOpaque(false);
+        JPanel cabecera = new JPanel(new BorderLayout(20, 0)); cabecera.setBackground(UI.VERDE);
+        JLabel marca = new JLabel("SICOV"); marca.setForeground(Color.WHITE); marca.setFont(marca.getFont().deriveFont(Font.BOLD, 28f));
+        JPanel identidad = new JPanel(); identidad.setLayout(new BoxLayout(identidad, BoxLayout.Y_AXIS)); identidad.setOpaque(false);
         identidad.add(marca);
         JLabel descripcion = new JLabel("ABARROTES · PUNTO DE VENTA");
-        descripcion.setForeground(new Color(225, 235, 214)); identidad.add(descripcion);
+        descripcion.setFont(descripcion.getFont().deriveFont(10f));
+        descripcion.setForeground(new Color(215, 230, 218)); identidad.add(descripcion);
         cabecera.add(identidad);
         cabecera.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 4, 0, UI.ACENTO),
-                BorderFactory.createEmptyBorder(12, 20, 12, 20)));
+                BorderFactory.createMatteBorder(0, 0, 3, 0, UI.DORADO),
+                BorderFactory.createEmptyBorder(14, 24, 14, 24)));
         JPanel accesos = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0)); accesos.setOpaque(false);
+        JLabel soporte = new JLabel("<html><small>Soporte técnico</small><br><b>5525972795</b></html>", new IconoCabecera(true), SwingConstants.LEFT);
+        soporte.setForeground(new Color(222, 234, 225)); soporte.setIconTextGap(8);
+        soporte.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 16)); accesos.add(soporte);
+        botonGestion.setIcon(new IconoCabecera(false)); botonGestion.setIconTextGap(8);
+        botonGestion.setToolTipText("Abrir o cerrar el menú de Gestión");
         accesos.add(botonVentas); accesos.add(botonGestion);
         cabecera.add(accesos, BorderLayout.EAST); add(cabecera, BorderLayout.NORTH);
         ventas = new PanelVentas(contexto);
-        contenido.add(ventas, "ventas"); contenido.add(new PanelGestion(this::navegar), "gestion");
+        contenido.add(ventas, "ventas");
         categorias = new PanelCategorias(contexto, this::guardarPaso, this::regresar);
         contenido.add(new PanelCompras(contexto), "compras"); contenido.add(categorias, "categorias");
         contenido.add(new PanelSalidas(contexto), "salidas"); contenido.add(new PanelReportes(contexto), "reportes");
         contenido.add(new PanelCancelaciones(contexto, () -> navegar("administradores")), "cancelaciones");
         contenido.add(new PanelPromociones(contexto), "promociones");
-        contenido.add(new PanelAdministradores(contexto), "administradores"); add(contenido);
+        contenido.add(new PanelAdministradores(contexto), "administradores");
+        menuGestion.setOpaque(false);
+        menuGestion.setFocusCycleRoot(true);
+        menuGestion.add(new PanelGestion(this::navegar, () -> mostrarGestion(false)), BorderLayout.WEST);
+        JPanel fondoMenu = new JPanel(); fondoMenu.setOpaque(false);
+        fondoMenu.addMouseListener(new MouseAdapter() {
+            @Override public void mousePressed(MouseEvent e) { mostrarGestion(false); }
+        });
+        menuGestion.add(fondoMenu);
+        menuGestion.setVisible(false);
+        JLayeredPane cuerpo = new JLayeredPane() {
+            @Override public void doLayout() {
+                contenido.setBounds(0, 0, getWidth(), getHeight());
+                menuGestion.setBounds(0, 0, getWidth(), getHeight());
+            }
+        };
+        cuerpo.add(contenido, JLayeredPane.DEFAULT_LAYER);
+        cuerpo.add(menuGestion, JLayeredPane.PALETTE_LAYER); add(cuerpo);
         JPanel pie = new JPanel(new BorderLayout());
         pie.setBorder(BorderFactory.createEmptyBorder(6, 20, 8, 20));
         pie.add(botonRegresar, BorderLayout.WEST);
@@ -64,6 +94,8 @@ public class VentanaPrincipal extends JFrame {
         });
     }
     public void navegar(String destino) {
+        if (destino.equals("gestion")) { mostrarGestion(true); return; }
+        mostrarGestion(false);
         if (!actual.equals(destino)) {
             guardarPaso();
             if (destino.equals("categorias")) categorias.mostrarMenu();
@@ -85,10 +117,22 @@ public class VentanaPrincipal extends JFrame {
     }
     private void actualizarNavegacion() {
         botonVentas.setVisible(!actual.equals("ventas"));
-        botonGestion.setVisible(!actual.equals("gestion"));
-        botonRegresar.setEnabled(!historial.isEmpty());
+        botonRegresar.setEnabled(menuGestion.isVisible() || !historial.isEmpty());
     }
-    public void regresar() { if (!historial.isEmpty()) historial.pop().run(); }
+    private void mostrarGestion(boolean visible) {
+        menuGestion.setVisible(visible);
+        ventas.activarAtajos(!visible);
+        botonGestion.setBackground(visible ? UI.SUAVE : Color.WHITE);
+        botonGestion.getAccessibleContext().setAccessibleDescription(visible ? "Menú de Gestión abierto" : "Menú de Gestión cerrado");
+        actualizarNavegacion();
+        if (visible) menuGestion.transferFocusDownCycle();
+        else if (actual.equals("ventas")) ventas.enfocarCodigo();
+        else botonGestion.requestFocusInWindow();
+    }
+    public void regresar() {
+        if (menuGestion.isVisible()) mostrarGestion(false);
+        else if (!historial.isEmpty()) historial.pop().run();
+    }
     private boolean teclaRegreso(KeyEvent e) {
         if (e.getKeyCode() != KeyEvent.VK_ESCAPE) return false;
         if (e.getID() == KeyEvent.KEY_RELEASED) { escapePresionado = false; return false; }
@@ -107,5 +151,24 @@ public class VentanaPrincipal extends JFrame {
     @Override public void removeNotify() {
         KeyboardFocusManager.getCurrentKeyboardFocusManager().removeKeyEventDispatcher(atajoRegreso);
         escapePresionado = false; super.removeNotify();
+    }
+    private record IconoCabecera(boolean telefono) implements Icon {
+        @Override public int getIconWidth() { return 18; }
+        @Override public int getIconHeight() { return 18; }
+        @Override public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D dibujo = (Graphics2D) g.create(); dibujo.translate(x, y);
+            dibujo.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            dibujo.setColor(c.getForeground()); dibujo.setStroke(new BasicStroke(1.6f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            if (telefono) {
+                Path2D receptor = new Path2D.Double();
+                receptor.moveTo(4, 1); receptor.lineTo(7, 5); receptor.lineTo(5, 7);
+                receptor.curveTo(6, 10, 8, 12, 11, 13); receptor.lineTo(13, 11);
+                receptor.lineTo(17, 14); receptor.lineTo(15, 17);
+                receptor.curveTo(9, 18, 0, 9, 1, 3); receptor.closePath(); dibujo.draw(receptor);
+            } else {
+                for (int linea = 4; linea <= 14; linea += 5) dibujo.drawLine(2, linea, 16, linea);
+            }
+            dibujo.dispose();
+        }
     }
 }

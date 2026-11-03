@@ -15,8 +15,9 @@ También puedes abrir una terminal PowerShell en esta carpeta y ejecutar:
 
 El programa compilado está en `dist/SICOV.jar`. Puede iniciarse con `java -jar dist/SICOV.jar`.
 Requiere Java 23 o posterior. Los datos se buscan junto al proyecto incluso al abrir el JAR desde otra carpeta.
-La pantalla de venta muestra los productos a la izquierda y el total y el botón **Pagar** a la derecha, con una paleta verde, crema y rojo. Hay un único acceso a Gestión y **Volver a ventas** aparece al visitar otras secciones.
+La pantalla de venta muestra los productos a la izquierda y el total y el botón **Pagar** a la derecha, con una paleta verde, crema y rojo. El encabezado incluye el teléfono de soporte **5525972795** y un botón **Gestión** que despliega el menú lateral. Al elegir una sección se cierra el menú; **Volver a ventas** aparece al visitar otras secciones. La venta vacía muestra un carrito tenue detrás de los mensajes de bienvenida.
 **Esc** y **Regresar** vuelven una pantalla en el historial, incluidos los pasos internos de Categorías.
+Si el menú lateral está abierto, **Esc** lo cierra primero.
 Por ejemplo: productos → lista de categorías → menú de categorías → pantalla anterior.
 
 ## Primer uso
@@ -32,7 +33,7 @@ Por ejemplo: productos → lista de categorías → menú de categorías → pan
 - Escribe o escanea el código en `C:`. Un lector que funcione como teclado y envíe Enter puede agregarlo directamente.
 - `2530*3` agrega tres unidades. Repetir un código acumula su cantidad en la misma fila.
 - El último producto agregado queda seleccionado. La papelera o **Supr/Delete** lo retira; **Deshacer** permite recuperarlo. **+** y **−** ajustan una pieza, 100 g o 100 ml según la unidad. El editor inferior muestra gramos para productos por kilogramo y mililitros para productos por litro; Enter aplica y vuelve al campo de código.
-- Para productos a granel se abre una captura con gramos/kilos o mililitros/litros, botones de cantidades habituales y vista previa del importe. También puedes indicar cuántos pesos quiere llevar el cliente: se convierte a la unidad del catálogo con tres decimales hacia abajo y se muestra el importe real que se cobrará. **Editar cantidad** o doble clic en el carrito abre la misma captura; por pieza ofrece cantidades como 1, 6 o 12.
+- Para productos a granel se abre una captura con gramos/kilos o mililitros/litros, botones de cantidades habituales y vista previa del importe. También puedes indicar cuántos pesos quiere llevar el cliente: se conserva la precisión al convertir a la unidad del catálogo y se redondea el cobro a centavos, respetando el importe capturado. Por ejemplo, **$20 de huevo a $38/kg** conserva **$20.00** en el carrito y el ticket. Las etiquetas abrevian la medida a tres decimales y usan **≈** si es aproximada; el editor conserva la cantidad completa para que confirmar o pagar no pierda centavos. **Editar cantidad** o doble clic en el carrito abre la misma captura; por pieza ofrece cantidades como 1, 6 o 12.
 - **A mano** muestra solo productos a granel (kilogramo o litro): tarjetas con foto o icono en dos columnas, hasta cuatro visibles y ocho al desplazarse. Las tarjetas aprovechan el espacio disponible y se adaptan a ventanas pequeñas. Se ordenan por el número de ventas vigentes que incluyen cada producto, contando una vez por venta, sin sumar peso ni importe; entradas, merma y ventas canceladas no cuentan. Los empates se ordenan por nombre y los productos aún sin ventas quedan al final. El orden se actualiza al registrar o cancelar ventas. Cada botón indica el precio por kilogramo o litro. No cambia la unidad de un producto por su nombre: registra el huevo como pieza o kilogramo según cómo lo vendas.
 - Un código desconocido muestra **Producto no encontrado** durante tres segundos, con X para cerrarlo.
 - **Buscar productos** o **B** abre el catálogo para buscar por nombre, código o categoría sin distinguir acentos. Hay filtros por categoría, a granel y sin código; ↑/↓ selecciona, Enter agrega y Esc cierra.
@@ -50,6 +51,8 @@ Las fotos aparecen en A mano, la búsqueda de productos, el carrito y el catálo
 El programa copia las fotos a `datos/imagenes/` y guarda las asociaciones por código en `datos/imagenes_productos.properties`; puedes mover o borrar el archivo que seleccionaste sin perder la copia. Las imágenes importadas se reducen a un máximo de 512 píxeles por lado manteniendo proporción y transparencia. Se admiten PNG/JPG de hasta 20 MB y 25 megapíxeles. Una foto ausente o dañada usa el icono de categoría y permite seguir vendiendo.
 
 El ejemplo **HUEVO (0304)** tiene una foto generada mediante IA en `datos/imagenes/huevo-ia.png`. Su prompt y herramienta se documentan en `datos/imagenes/huevo-ia-prompt.txt`. El catálogo CSV conserva su formato original, sin cambiar precios, unidades ni movimientos.
+
+**JAMÓN (900051)** y **QUESO OAXACA (900052)** están registrados a **$100.00/kg**, sin foto asignada. Puedes añadir sus imágenes desde Compras.
 
 ## Promociones
 

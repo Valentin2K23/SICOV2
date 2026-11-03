@@ -67,11 +67,13 @@ public final class UI {
         JLabel l = new JLabel(texto); l.setFont(l.getFont().deriveFont(12f)); l.setForeground(MUTED); return l;
     }
     public static String medida(BigDecimal cantidad, com.sicov.modelo.UnidadVenta unidad) {
-        if (unidad == com.sicov.modelo.UnidadVenta.KILOGRAMO && cantidad.abs().compareTo(BigDecimal.ONE) < 0)
-            return cantidad(cantidad.multiply(new BigDecimal("1000"))) + " g";
-        if (unidad == com.sicov.modelo.UnidadVenta.LITRO && cantidad.abs().compareTo(BigDecimal.ONE) < 0)
-            return cantidad(cantidad.multiply(new BigDecimal("1000"))) + " ml";
-        return cantidad(cantidad) + " " + unidad.simbolo();
+        String simbolo = unidad.simbolo();
+        if (unidad != com.sicov.modelo.UnidadVenta.PIEZA && cantidad.abs().compareTo(BigDecimal.ONE) < 0) {
+            cantidad = cantidad.movePointRight(3);
+            simbolo = unidad == com.sicov.modelo.UnidadVenta.KILOGRAMO ? "g" : "ml";
+        }
+        BigDecimal visible = cantidad.setScale(3, RoundingMode.HALF_UP);
+        return (cantidad.compareTo(visible) == 0 ? "" : "≈ ") + cantidad(visible) + " " + simbolo;
     }
     public static JPanel tarjeta() {
         JPanel p = new JPanel(new BorderLayout(12, 12)); p.setBackground(Color.WHITE);

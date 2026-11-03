@@ -81,7 +81,15 @@ public class VerificarPantallas {
                 dibujar(frame, salida, "compras-720");
                 frame.navegar("reportes"); dibujar(frame, salida, "reportes-720");
                 frame.navegar("gestion"); dibujar(frame, salida, "gestion-720");
-                frame.navegar("categorias"); dibujar(frame, salida, "categorias-menu-720");
+                JPanel menuGestion = campo(frame, "menuGestion", JPanel.class);
+                vista(frame, "reportes", null);
+                if (!menuGestion.isVisible()) throw new AssertionError("Gestión debe desplegar un menú sobre la pantalla actual");
+                escape(frame); vista(frame, "reportes", null);
+                if (menuGestion.isVisible()) throw new AssertionError("Esc debe cerrar primero el menú de Gestión");
+                boton(frame, "Gestión").doClick();
+                boton(menuGestion, "Categorías").doClick();
+                if (menuGestion.isVisible()) throw new AssertionError("Seleccionar una sección debe cerrar el menú");
+                dibujar(frame, salida, "categorias-menu-720");
                 PanelCategorias categorias = campo(frame, "categorias", PanelCategorias.class);
                 JButton configurar = boton(categorias, "Configurar"), consultar = boton(categorias, "Ver categorías");
                 if (configurar.getWidth() != configurar.getHeight() || consultar.getWidth() != consultar.getHeight())
@@ -132,7 +140,7 @@ public class VerificarPantallas {
                 if (productosCategoria.getRowCount() != 0) throw new AssertionError("Categoría vacía muestra cero productos");
                 escape(frame); vista(frame, "categorias", "consultar");
                 escape(frame); vista(frame, "categorias", "menu");
-                escape(frame); vista(frame, "gestion", null);
+                escape(frame); vista(frame, "reportes", null);
                 frame.navegar("categorias");
                 if (!campo(categorias, "contenido", JPanel.class).getComponent(0).isVisible())
                     throw new AssertionError("Al entrar se muestran los dos botones");

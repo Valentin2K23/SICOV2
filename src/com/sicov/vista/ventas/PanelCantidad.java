@@ -101,7 +101,7 @@ public final class PanelCantidad extends JPanel {
     private void actualizar() {
         unidad.setText(switch (modo) { case "piezas" -> "pzas"; case "gramos" -> "g";
             case "kilos" -> "kg"; case "mililitros" -> "ml"; case "litros" -> "L"; default -> "$"; });
-        ayuda.setText(modo.equals("pesos") ? "¿Cuántos pesos quiere llevar? Se ajusta al peso o volumen disponible."
+        ayuda.setText(modo.equals("pesos") ? "¿Cuántos pesos quiere llevar? Se respeta el importe indicado."
                 : producto.unidad() == UnidadVenta.PIEZA ? "Escribe cuántas piezas quiere llevar."
                 : "Escribe el peso o volumen que marca la báscula o el medidor.");
         for (Component c : modos.getComponents()) if (c instanceof JButton b) {
@@ -110,13 +110,9 @@ public final class PanelCantidad extends JPanel {
         }
         try {
             BigDecimal cantidad = convertir(producto, UI.numero(entrada.getText()), modo);
-            String texto = UI.cantidad(cantidad) + " " + producto.unidad().simbolo();
-            if (producto.unidad() != UnidadVenta.PIEZA && cantidad.compareTo(BigDecimal.ONE) < 0)
-                texto = UI.cantidad(cantidad.movePointRight(3))
-                        + (producto.unidad() == UnidadVenta.KILOGRAMO ? " g" : " ml") + " · " + texto;
-            resumen.setText(texto);
+            resumen.setText(UI.medida(cantidad, producto.unidad()));
             importe.setText("Importe: " + UI.dinero(cantidad.multiply(producto.precio()).setScale(2, RoundingMode.HALF_UP)));
-            aviso.setText(modo.equals("pesos") ? "Se cobra el importe calculado de esta cantidad." : " ");
+            aviso.setText(modo.equals("pesos") ? "El peso o volumen mostrado es aproximado." : " ");
             aviso.setForeground(new Color(102, 115, 105)); agregar.setEnabled(true);
         } catch (IllegalArgumentException e) {
             resumen.setText("Cantidad por confirmar"); importe.setText("Importe: —");
@@ -148,7 +144,10 @@ public final class PanelCantidad extends JPanel {
                     throw new IllegalArgumentException("El importe requiere un producto a granel con precio mayor que cero.");
                 if (entrada.stripTrailingZeros().scale() > 2)
                     throw new IllegalArgumentException("El importe debe tener máximo dos decimales.");
-                yield entrada.divide(producto.precio(), 3, RoundingMode.DOWN);
+                // Conserva precisión hasta el cobro: truncar a gramos perdía centavos.
+                // CEILING evita quedar justo debajo de un umbral al acumular cantidades.
+                int escala = Math.max(12, producto.precio().precision() - producto.precio().scale() + 10);
+                yield entrada.divide(producto.precio(), escala, RoundingMode.CEILING);
             }
             default -> throw new IllegalArgumentException("Selecciona una unidad válida.");
         };
