@@ -15,6 +15,7 @@ También puedes abrir una terminal PowerShell en esta carpeta y ejecutar:
 
 El programa compilado está en `dist/SICOV.jar`. Puede iniciarse con `java -jar dist/SICOV.jar`.
 Requiere Java 23 o posterior. Los datos se buscan junto al proyecto incluso al abrir el JAR desde otra carpeta.
+La pantalla de venta muestra los productos a la izquierda y el total y el botón **Pagar** a la derecha, con una paleta verde, crema y rojo. Hay un único acceso a Gestión y **Volver a ventas** aparece al visitar otras secciones.
 **Esc** y **Regresar** vuelven una pantalla en el historial, incluidos los pasos internos de Categorías.
 Por ejemplo: productos → lista de categorías → menú de categorías → pantalla anterior.
 
@@ -30,13 +31,25 @@ Por ejemplo: productos → lista de categorías → menú de categorías → pan
 
 - Escribe o escanea el código en `C:`. Un lector que funcione como teclado y envíe Enter puede agregarlo directamente.
 - `2530*3` agrega tres unidades. Repetir un código acumula su cantidad en la misma fila.
-- Al seleccionar una fila, su código pasa a `C:`. El contador inferior cambia la cantidad existente; cero elimina el producto.
-- Para kilogramos y litros se solicita una cantidad decimal. Los botones + y − cambian una unidad; la casilla permite escribir decimales.
+- El último producto agregado queda seleccionado. La papelera o **Supr/Delete** lo retira; **Deshacer** permite recuperarlo. **+** y **−** ajustan una pieza, 100 g o 100 ml según la unidad. El editor inferior muestra gramos para productos por kilogramo y mililitros para productos por litro; Enter aplica y vuelve al campo de código.
+- Para productos a granel se abre una captura con gramos/kilos o mililitros/litros, botones de cantidades habituales y vista previa del importe. También puedes indicar cuántos pesos quiere llevar el cliente: se convierte a la unidad del catálogo con tres decimales hacia abajo y se muestra el importe real que se cobrará. **Editar cantidad** o doble clic en el carrito abre la misma captura; por pieza ofrece cantidades como 1, 6 o 12.
+- **A mano** muestra solo productos a granel (kilogramo o litro): tarjetas con foto o icono en dos columnas, hasta cuatro visibles y ocho al desplazarse. Las tarjetas aprovechan el espacio disponible y se adaptan a ventanas pequeñas. Se ordenan por el número de ventas vigentes que incluyen cada producto, contando una vez por venta, sin sumar peso ni importe; entradas, merma y ventas canceladas no cuentan. Los empates se ordenan por nombre y los productos aún sin ventas quedan al final. El orden se actualiza al registrar o cancelar ventas. Cada botón indica el precio por kilogramo o litro. No cambia la unidad de un producto por su nombre: registra el huevo como pieza o kilogramo según cómo lo vendas.
 - Un código desconocido muestra **Producto no encontrado** durante tres segundos, con X para cerrarlo.
-- **Buscar mercancía** presenta productos marcados sin código físico y permite mostrar todo el catálogo.
-- Los botones de billetes y el campo `$` acumulan efectivo. Se guarda la venta cuando el recibido alcanza o supera el total y se muestra el cambio.
-- Dos pulsaciones separadas de Enter, dentro de 0.7 segundos, cobran el importe exacto si hay productos y no se ha registrado efectivo. No deben quedar códigos o importes pendientes de capturar ni estar editándose la cantidad. El Enter enviado al capturar un código no cuenta como parte del atajo.
+- **Buscar productos** o **B** abre el catálogo para buscar por nombre, código o categoría sin distinguir acentos. Hay filtros por categoría, a granel y sin código; ↑/↓ selecciona, Enter agrega y Esc cierra.
+- **Pagar** abre la captura del efectivo total del cliente. Los botones de billetes eligen el importe recibido (no lo acumulan); también puedes escribirlo directamente o elegir **Importe exacto**. El cambio se muestra al instante. Confirma con **Confirmar pago y ver ticket** o **Enter** desde cualquier control de la ventana de cobro; solo se acepta si el efectivo cubre el total. Capturar efectivo por sí solo no guarda ni vacía la venta. **Volver a la venta**, Esc o la X conservan los productos y descartan la captura de efectivo.
+- El ticket muestra folio, fecha, productos, promociones, total, efectivo y cambio. El carrito permanece visible detrás; cerrar el ticket con su botón, una nueva pulsación de **Enter**, Esc o la X limpia la venta y enfoca el código para el siguiente cliente. El pago se registra una sola vez. Mantener Enter presionado después de pagar no cierra el ticket automáticamente: hay que soltarlo y pulsarlo de nuevo.
+- Los atajos de una tecla funcionan en Ventas, fuera de campos de texto o con el campo de código vacío; mientras escribes códigos o cantidades, se respeta la edición. Se retiró el cobro por doble Enter para evitar pagos accidentales.
 - Los importes se calculan con decimales exactos y se redondean a centavos.
+
+## Imágenes opcionales de productos
+
+En **Gestión → Compras**, al crear o editar un producto, pulsa **Elegir imagen…**, selecciona un PNG o JPG y guarda el producto. Se muestra una vista previa. **Usar icono de categoría** quita la foto al guardar y recupera el símbolo correspondiente a la categoría; si esa categoría no se reconoce, se usa su sección o el icono general de abarrotes.
+
+Las fotos aparecen en A mano, la búsqueda de productos, el carrito y el catálogo de Compras. A mano conserva su orden por frecuencia de ventas y hasta ocho productos a granel, con imágenes y tarjetas más amplias.
+
+El programa copia las fotos a `datos/imagenes/` y guarda las asociaciones por código en `datos/imagenes_productos.properties`; puedes mover o borrar el archivo que seleccionaste sin perder la copia. Las imágenes importadas se reducen a un máximo de 512 píxeles por lado manteniendo proporción y transparencia. Se admiten PNG/JPG de hasta 20 MB y 25 megapíxeles. Una foto ausente o dañada usa el icono de categoría y permite seguir vendiendo.
+
+El ejemplo **HUEVO (0304)** tiene una foto generada mediante IA en `datos/imagenes/huevo-ia.png`. Su prompt y herramienta se documentan en `datos/imagenes/huevo-ia-prompt.txt`. El catálogo CSV conserva su formato original, sin cambiar precios, unidades ni movimientos.
 
 ## Promociones
 
@@ -82,7 +95,7 @@ Si la olvidaste, pulsa **Cambiar contraseña**, junto a **Guardar contraseña y 
 La recuperación exige que coincidan las tres respuestas; ignora mayúsculas y espacios al inicio y al final. Conserva los acentos y espacios interiores.
 Contraseñas y respuestas se guardan mediante PBKDF2 con una sal independiente para cada una. No se muestra ni se recupera la contraseña anterior.
 Las instalaciones antiguas sin respuestas deben configurarlas con su contraseña actual antes de usar la recuperación.
-En Reportes se puede cancelar una venta con esa contraseña. Permanece visible como CANCELADA y queda excluida de los acumulados.
+En **Gestión → Cancelar ventas** puedes buscar por folio, filtrar ventas vigentes o canceladas y revisar el detalle completo antes de cancelar. Se pide un **motivo obligatorio** y la contraseña de administrador; el botón de cancelación exige una confirmación explícita. También puedes hacerlo desde Reportes con el mismo formulario. La venta permanece en el historial como CANCELADA, conserva sus importes y productos, guarda el motivo y queda excluida de los acumulados y del descuento de cantidades estimadas. Si aún no tienes contraseña, el botón **Configurar contraseña** abre Administradores.
 La administración completa de usuarios y permisos puede adaptarse al flujo que se defina después.
 
 ## Archivos y pruebas
@@ -96,7 +109,7 @@ Las otras clases y archivos de la estructura inicial quedan disponibles para amp
 Las pruebas usan carpetas temporales y no agregan datos de demostración al catálogo real.
 `tests/com/sicov/VerificarPantallas.java` permite renderizar las pantallas con datos temporales para revisar 720p y 1080p.
 
-No se genera ni imprime ticket en esta versión.
+Se genera un ticket en pantalla después de confirmar el pago. No se imprime en esta versión.
 
 ## Catálogo cargado con referencias de OXXO
 

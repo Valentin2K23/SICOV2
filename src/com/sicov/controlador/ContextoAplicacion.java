@@ -12,6 +12,7 @@ import java.util.*;
 
 public final class ContextoAplicacion {
     private final ArchivoProductos archivoProductos;
+    private final ArchivoImagenesProductos archivoImagenes;
     private final ArchivoPromociones archivoPromociones;
     private final ArchivoVentas archivoVentas;
     private final ArchivoCompras archivoCompras;
@@ -25,6 +26,7 @@ public final class ContextoAplicacion {
 
     public ContextoAplicacion(Path directorio) throws IOException {
         archivoProductos = new ArchivoProductos(directorio);
+        archivoImagenes = new ArchivoImagenesProductos(directorio);
         archivoPromociones = new ArchivoPromociones(directorio);
         archivoVentas = new ArchivoVentas(directorio);
         archivoCompras = new ArchivoCompras(directorio);
@@ -40,6 +42,20 @@ public final class ContextoAplicacion {
     public List<Promocion> promociones() { return List.copyOf(promociones); }
     public Producto producto(String codigo) {
         return productos.stream().filter(p -> p.codigo().equals(codigo.strip())).findFirst().orElse(null);
+    }
+    public Path imagenProducto(String codigo) { return archivoImagenes.imagen(codigo == null ? null : codigo.strip()); }
+    public String seccionCategoria(String categoria) {
+        return categorias.stream().filter(c -> c.nombre().equalsIgnoreCase(categoria)).map(Categoria::seccion).findFirst().orElse("");
+    }
+    public void guardarImagenProducto(String codigo, Path origen) throws IOException {
+        Producto producto = producto(codigo);
+        if (producto == null) throw new IllegalArgumentException("Primero guarda el producto para asignar su imagen.");
+        archivoImagenes.guardar(producto.codigo(), origen); notificar();
+    }
+    public void quitarImagenProducto(String codigo) throws IOException {
+        Producto producto = producto(codigo);
+        if (producto == null) throw new IllegalArgumentException("Selecciona un producto existente.");
+        archivoImagenes.quitar(producto.codigo()); notificar();
     }
     public void escuchar(Runnable oyente) { oyentes.add(oyente); }
     private void notificar() { List.copyOf(oyentes).forEach(Runnable::run); }
@@ -117,10 +133,15 @@ public final class ContextoAplicacion {
         notificar(); return registro;
     }
     public void cancelarVenta(String folio, char[] clave) throws IOException {
+        cancelarVenta(folio, clave, "Cancelación autorizada");
+    }
+    public void cancelarVenta(String folio, char[] clave, String motivo) throws IOException {
         if (!autorizacion.verificar(clave)) throw new IllegalArgumentException("Contraseña incorrecta.");
         if (ventas.stream().noneMatch(v -> v.folio().equals(folio) && !v.cancelado()))
             throw new IllegalArgumentException("Selecciona una venta vigente.");
-        List<MovimientoInventario> nuevas = ventas.stream().map(v -> v.folio().equals(folio) ? v.cancelar() : v).toList();
+        if (motivo == null || motivo.isBlank()) throw new IllegalArgumentException("Escribe el motivo de la cancelación.");
+        String motivoGuardado = motivo.strip();
+        List<MovimientoInventario> nuevas = ventas.stream().map(v -> v.folio().equals(folio) ? v.cancelar(motivoGuardado) : v).toList();
         archivoVentas.guardar(nuevas); ventas = nuevas; notificar();
     }
 }

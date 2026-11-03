@@ -9,6 +9,11 @@ public record MovimientoInventario(String folio, LocalDateTime fecha, Tipo tipo,
         BigDecimal total, BigDecimal recibido, BigDecimal cambio, String motivo, List<DetalleVenta> detalles) {
     public enum Tipo { ENTRADA, VENTA, MERMA }
     public MovimientoInventario { detalles = List.copyOf(detalles); }
+    public MovimientoInventario cancelar(String motivoCancelacion) {
+        String observacion = "Cancelación: " + motivoCancelacion;
+        return new MovimientoInventario(folio, fecha, tipo, true, total, recibido, cambio,
+                motivo.isBlank() ? observacion : motivo + "\n" + observacion, detalles);
+    }
     public MovimientoInventario cancelar() {
         return new MovimientoInventario(folio, fecha, tipo, true, total, recibido, cambio, motivo, detalles);
     }

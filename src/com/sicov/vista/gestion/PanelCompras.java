@@ -3,8 +3,11 @@ package com.sicov.vista.gestion;
 import com.sicov.controlador.ContextoAplicacion;
 import com.sicov.modelo.*;
 import com.sicov.vista.UI;
+import com.sicov.vista.ImagenProducto;
 import java.awt.*;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
@@ -25,6 +28,11 @@ public class PanelCompras extends JPanel {
     private final TableRowSorter<ModeloRecepcion> filtro = new TableRowSorter<>(modelo);
     private final JLabel estado = new JLabel("Selecciona las cantidades que realmente recibiste.");
     private boolean editando;
+    private Path imagenElegida;
+    private boolean quitarImagen;
+    private final JLabel vistaImagen = new JLabel(), estadoImagen = UI.discreto("Icono de categoría");
+    private final JLabel precioEtiqueta = new JLabel("Precio de venta por pieza");
+    private final JLabel ayudaUnidad = UI.discreto("Pieza: huevos sueltos, latas y paquetes.");
 
     public PanelCompras(ContextoAplicacion contexto) {
         super(new BorderLayout()); this.contexto = contexto;
@@ -33,10 +41,31 @@ public class PanelCompras extends JPanel {
         formulario.setBorder(BorderFactory.createTitledBorder("Registrar producto"));
         categoria.setEditable(true);
         formulario.add(UI.campo("Nombre", nombre)); formulario.add(Box.createVerticalStrut(8));
-        formulario.add(UI.campo("Precio de venta por unidad", precio)); formulario.add(Box.createVerticalStrut(8));
+        JPanel campoPrecio = new JPanel(new BorderLayout(5, 5)); campoPrecio.setOpaque(false);
+        campoPrecio.add(precioEtiqueta, BorderLayout.NORTH); campoPrecio.add(precio); campoPrecio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+        formulario.add(campoPrecio); formulario.add(Box.createVerticalStrut(8));
         formulario.add(UI.campo("Código · manual o escáner", codigo)); formulario.add(Box.createVerticalStrut(8));
         formulario.add(UI.campo("Categoría", categoria)); formulario.add(Box.createVerticalStrut(8));
-        formulario.add(UI.campo("Unidad de venta", unidad)); formulario.add(sinCodigo);
+        formulario.add(UI.campo("Se vende por", unidad));
+        formulario.add(ayudaUnidad); formulario.add(Box.createVerticalStrut(6)); formulario.add(sinCodigo);
+        unidad.addActionListener(e -> {
+            UnidadVenta seleccion = (UnidadVenta) unidad.getSelectedItem();
+            precioEtiqueta.setText("Precio de venta por " + (seleccion == UnidadVenta.KILOGRAMO ? "kilogramo" : seleccion == UnidadVenta.LITRO ? "litro" : "pieza"));
+            ayudaUnidad.setText(seleccion == UnidadVenta.KILOGRAMO ? "<html>Kilogramo: jamón, queso o huevo por peso.<br>En Ventas podrás capturar gramos.</html>"
+                    : seleccion == UnidadVenta.LITRO ? "Litro: productos servidos a granel." : "Pieza: huevos sueltos, latas y paquetes.");
+            if (!editando && seleccion != UnidadVenta.PIEZA) sinCodigo.setSelected(true);
+        });
+        JPanel imagen = new JPanel(new BorderLayout(10, 5)); imagen.setOpaque(false);
+        imagen.add(new JLabel("Imagen del producto (opcional)"), BorderLayout.NORTH);
+        vistaImagen.setPreferredSize(new Dimension(72, 72)); imagen.add(vistaImagen, BorderLayout.WEST);
+        JPanel accionesImagen = new JPanel(new GridLayout(2, 1, 0, 5)); accionesImagen.setOpaque(false);
+        accionesImagen.add(UI.boton("Elegir imagen…", this::elegirImagen));
+        accionesImagen.add(UI.boton("Usar icono de categoría", () -> {
+            imagenElegida = null; quitarImagen = true; actualizarImagen();
+        }));
+        imagen.add(accionesImagen); imagen.add(estadoImagen, BorderLayout.SOUTH);
+        imagen.setMaximumSize(new Dimension(Integer.MAX_VALUE, 116));
+        formulario.add(Box.createVerticalStrut(10)); formulario.add(imagen); formulario.add(Box.createVerticalStrut(10));
         formulario.add(UI.boton("Guardar producto", this::guardar));
         formulario.add(Box.createVerticalStrut(6)); formulario.add(UI.boton("Limpiar / nuevo", this::limpiar));
         formulario.add(Box.createVerticalGlue());
@@ -45,7 +74,15 @@ public class PanelCompras extends JPanel {
             if (componente instanceof JComponent jc) jc.setAlignmentX(Component.LEFT_ALIGNMENT);
         JPanel catalogo = new JPanel(new BorderLayout(8, 8));
         catalogo.add(UI.campo("Buscar por nombre o código · el escáner también funciona aquí", buscar), BorderLayout.NORTH);
-        tabla.setRowSorter(filtro); tabla.setRowHeight(38);
+        tabla.setRowSorter(filtro); tabla.setRowHeight(48);
+        tabla.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override public Component getTableCellRendererComponent(JTable tabla, Object valor, boolean seleccion, boolean foco, int fila, int columna) {
+                JLabel celda = (JLabel) super.getTableCellRendererComponent(tabla, valor, seleccion, foco, fila, columna);
+                Producto p = productos.get(tabla.convertRowIndexToModel(fila));
+                celda.setIcon(ImagenProducto.icono(p, contexto.imagenProducto(p.codigo()), contexto.seccionCategoria(p.categoria()), 36));
+                celda.setIconTextGap(8); return celda;
+            }
+        });
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabla.putClientProperty("terminateEditOnFocusLost", true);
         tabla.getColumnModel().getColumn(0).setPreferredWidth(330);
@@ -58,16 +95,41 @@ public class PanelCompras extends JPanel {
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         acciones.add(UI.boton("Editar seleccionado", this::editar));
         acciones.add(UI.boton("Registrar recepción", this::recibir)); catalogo.add(acciones, BorderLayout.SOUTH);
-        JSplitPane division = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, formulario, catalogo);
+        JScrollPane desplazarFormulario = new JScrollPane(formulario);
+        desplazarFormulario.setBorder(BorderFactory.createEmptyBorder());
+        desplazarFormulario.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        desplazarFormulario.getVerticalScrollBar().setUnitIncrement(20);
+        JSplitPane division = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, desplazarFormulario, catalogo);
         division.setResizeWeight(0.28); division.setDividerLocation(310);
-        formulario.setMinimumSize(new Dimension(260, 300)); catalogo.setMinimumSize(new Dimension(400, 300));
+        desplazarFormulario.setMinimumSize(new Dimension(285, 300)); catalogo.setMinimumSize(new Dimension(400, 300));
         pagina.add(division, BorderLayout.CENTER); pagina.add(estado, BorderLayout.SOUTH); add(pagina);
         UI.enter(nombre, () -> precio.requestFocusInWindow());
         UI.enter(precio, () -> { try { UI.numero(precio.getText()); codigo.requestFocusInWindow(); } catch (Exception e) { UI.error(this, e); } });
         UI.enter(codigo, this::guardar);
         UI.escuchar(buscar, this::filtrar);
         UI.enter(buscar, this::buscarCodigo);
-        contexto.escuchar(this::refrescar); refrescar();
+        categoria.addActionListener(e -> actualizarImagen());
+        UI.escuchar(codigo, this::actualizarImagen);
+        contexto.escuchar(this::refrescar); refrescar(); actualizarImagen();
+    }
+    private void elegirImagen() {
+        JFileChooser selector = new JFileChooser(); selector.setDialogTitle("Elegir imagen del producto");
+        selector.setFileFilter(new FileNameExtensionFilter("Imágenes PNG o JPG", "png", "jpg", "jpeg"));
+        selector.setAcceptAllFileFilterUsed(false);
+        if (selector.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
+        Path seleccion = selector.getSelectedFile().toPath();
+        if (!ImagenProducto.esImagenValida(seleccion)) {
+            UI.error(this, new IllegalArgumentException("Selecciona una imagen PNG o JPG válida, de hasta 20 MB y 25 megapíxeles.")); return;
+        }
+        imagenElegida = seleccion; quitarImagen = false; actualizarImagen();
+    }
+    private void actualizarImagen() {
+        Object cat = categoria.isEditable() ? categoria.getEditor().getItem() : categoria.getSelectedItem();
+        String nombreCategoria = cat == null || cat.toString().isBlank() ? "Sin categoría" : cat.toString();
+        Producto vista = new Producto("vista", "Vista previa", BigDecimal.ZERO, nombreCategoria, UnidadVenta.PIEZA, false);
+        Path foto = imagenElegida != null ? imagenElegida : quitarImagen ? null : contexto.imagenProducto(codigo.getText());
+        vistaImagen.setIcon(ImagenProducto.icono(vista, foto, contexto.seccionCategoria(nombreCategoria), 72));
+        estadoImagen.setText(imagenElegida != null ? "Imagen elegida · se aplica al guardar" : foto != null ? "Imagen del producto" : "Icono de categoría");
     }
     private void refrescar() {
         productos = contexto.productos(); modelo.fireTableDataChanged();
@@ -103,21 +165,31 @@ public class PanelCompras extends JPanel {
             Producto p = new Producto(codigo.getText(), nombre.getText(), UI.numero(precio.getText()),
                     cat == null ? "" : cat.toString(), (UnidadVenta) unidad.getSelectedItem(), sinCodigo.isSelected());
             contexto.guardarProducto(p, editando);
+            try {
+                if (imagenElegida != null) contexto.guardarImagenProducto(p.codigo(), imagenElegida);
+                else if (quitarImagen) contexto.quitarImagenProducto(p.codigo());
+            } catch (Exception imagenError) {
+                editando = true; codigo.setEditable(false);
+                estado.setText("Producto guardado; falta aplicar su imagen. Reintenta Guardar producto.");
+                UI.error(this, imagenError); return;
+            }
             estado.setText("Producto guardado: " + p.nombre() + ". Indica la cantidad recibida en el catálogo.");
             limpiar();
         } catch (Exception e) { UI.error(this, e); }
     }
     private void limpiar() {
+        imagenElegida = null; quitarImagen = false;
         nombre.setText(""); precio.setText(""); codigo.setText(""); codigo.setEditable(true);
         unidad.setSelectedItem(UnidadVenta.PIEZA); sinCodigo.setSelected(false); editando = false;
-        nombre.requestFocusInWindow();
+        actualizarImagen(); nombre.requestFocusInWindow();
     }
     private void editar() {
         int fila = tabla.getSelectedRow(); if (fila < 0) return;
         Producto p = productos.get(tabla.convertRowIndexToModel(fila));
+        imagenElegida = null; quitarImagen = false;
         nombre.setText(p.nombre()); precio.setText(p.precio().toPlainString()); codigo.setText(p.codigo());
         categoria.setSelectedItem(p.categoria()); unidad.setSelectedItem(p.unidad()); sinCodigo.setSelected(p.sinCodigoFisico());
-        editando = true; codigo.setEditable(false); nombre.requestFocusInWindow();
+        editando = true; codigo.setEditable(false); actualizarImagen(); nombre.requestFocusInWindow();
     }
     private void recibir() {
         try {

@@ -5,6 +5,7 @@ import com.sicov.modelo.*;
 import com.sicov.servicio.ServicioReportes;
 import com.sicov.vista.UI;
 import java.awt.*;
+import java.awt.event.HierarchyEvent;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
@@ -17,8 +18,11 @@ public class PanelReportes extends JPanel {
     private final JTable tabla = new JTable(modelo);
     private final JTextField buscar = new JTextField(22);
     private final JTextArea detalle = new JTextArea();
+    private final JLabel estado = new JLabel(" ");
+    private final JButton cancelar;
     private List<MovimientoInventario> visibles = List.of();
     private String tipo = "AMBOS";
+    private boolean actualizando;
     public PanelReportes(ContextoAplicacion contexto) {
         super(new BorderLayout()); this.contexto = contexto;
         JPanel pagina = UI.pagina("Reportes · entradas y salidas");
@@ -33,16 +37,23 @@ public class PanelReportes extends JPanel {
         detalle.setMargin(new Insets(12, 12, 12, 12));
         JSplitPane division = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(tabla), new JScrollPane(detalle));
         division.setResizeWeight(0.5); division.setDividerLocation(230); centro.add(division);
-        JPanel pie = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pie.add(new JLabel("Selecciona varios folios con Ctrl para ver un reporte combinado."));
-        pie.add(UI.boton("Cancelar venta seleccionada", this::cancelar));
+        JPanel pie = new JPanel(new BorderLayout(12, 8));
+        pie.add(UI.discreto("Selecciona varios folios con Ctrl para ver un reporte combinado."), BorderLayout.CENTER);
+        cancelar = UI.boton("Cancelar venta seleccionada", this::cancelar);
+        pie.add(cancelar, BorderLayout.EAST); estado.setForeground(UI.MUTED); pie.add(estado, BorderLayout.SOUTH);
         centro.add(pie, BorderLayout.SOUTH); pagina.add(centro); add(pagina);
-        tabla.getSelectionModel().addListSelectionListener(e -> { if (!e.getValueIsAdjusting()) mostrar(); });
+        tabla.getSelectionModel().addListSelectionListener(e -> { if (!actualizando && !e.getValueIsAdjusting()) mostrar(); });
         UI.escuchar(buscar, this::refrescar);
+        addHierarchyListener(e -> {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0 && isShowing()) refrescar();
+        });
         contexto.escuchar(this::refrescar); refrescar();
     }
     private void refrescar() {
+        Set<String> seleccionados = new HashSet<>();
+        for (int fila : tabla.getSelectedRows()) if (fila < visibles.size()) seleccionados.add(visibles.get(fila).folio());
         String texto = buscar.getText().strip().toLowerCase(Locale.ROOT);
+        actualizando = true;
         visibles = contexto.registros().stream().filter(r -> r.folio().toLowerCase(Locale.ROOT).contains(texto))
                 .filter(r -> tipo.equals("AMBOS") || (tipo.equals("ENTRADAS") == (r.tipo() == MovimientoInventario.Tipo.ENTRADA)))
                 .sorted(Comparator.comparingInt((MovimientoInventario r) -> r.tipo() == MovimientoInventario.Tipo.ENTRADA ? 0 : 1)
@@ -52,18 +63,27 @@ public class PanelReportes extends JPanel {
                 r.fecha().format(DateTimeFormatter.ofPattern("HH:mm:ss")), r.tipo() == MovimientoInventario.Tipo.ENTRADA
                 ? "Entrada" : r.tipo() == MovimientoInventario.Tipo.VENTA ? "Salida · venta" : "Salida · merma",
                 r.cancelado() ? "CANCELADA" : "Vigente"});
-        if (!visibles.isEmpty()) tabla.setRowSelectionInterval(0, 0); else detalle.setText("Aún no hay registros para esta búsqueda.");
+        for (int i = 0; i < visibles.size(); i++)
+            if (seleccionados.contains(visibles.get(i).folio())) tabla.addRowSelectionInterval(i, i);
+        if (!visibles.isEmpty() && tabla.getSelectedRowCount() == 0) tabla.setRowSelectionInterval(0, 0);
+        actualizando = false; mostrar();
+        if (visibles.isEmpty()) detalle.setText("Aún no hay registros para esta búsqueda.");
     }
     private void mostrar() {
         StringBuilder texto = new StringBuilder();
         List<MovimientoInventario> seleccion = new ArrayList<>();
         for (int fila : tabla.getSelectedRows()) if (fila < visibles.size()) seleccion.add(visibles.get(fila));
+        cancelar.setEnabled(seleccion.size() == 1 && seleccion.get(0).tipo() == MovimientoInventario.Tipo.VENTA
+                && !seleccion.get(0).cancelado() && contexto.autorizacion.configurada());
+        cancelar.setToolTipText(!contexto.autorizacion.configurada()
+                ? "Configura la contraseña en Administradores para autorizar cancelaciones." : null);
         seleccion.sort(Comparator.comparingInt(r -> r.tipo() == MovimientoInventario.Tipo.ENTRADA ? 0 : 1));
         for (var r : seleccion) {
             texto.append(r.tipo() == MovimientoInventario.Tipo.ENTRADA ? "ENTRADA" : "SALIDA")
                     .append(" · ").append(r.folio()).append(r.cancelado() ? " · CANCELADA" : "")
                     .append("\n").append(r.fecha().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))).append("\n");
-            if (!r.motivo().isBlank()) texto.append(r.motivo()).append("\n");
+            if (!r.motivo().isBlank()) texto.append(r.cancelado() ? "Motivo de cancelación: " : "Motivo: ")
+                    .append(r.motivo()).append("\n");
             if (r.tipo() == MovimientoInventario.Tipo.VENTA) {
                 Map<String, java.math.BigDecimal> categorias = new TreeMap<>();
                 for (var d : r.detalles()) categorias.merge(d.categoria(), d.importe(), java.math.BigDecimal::add);
@@ -84,15 +104,14 @@ public class PanelReportes extends JPanel {
     }
     private void cancelar() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0 || tabla.getSelectedRowCount() != 1) { UI.error(this, new Exception("Selecciona una sola venta.")); return; }
+        estado.setForeground(UI.ACENTO);
+        if (fila < 0 || tabla.getSelectedRowCount() != 1) { estado.setText("Selecciona una sola venta."); return; }
         var r = visibles.get(fila);
-        if (r.tipo() != MovimientoInventario.Tipo.VENTA || r.cancelado()) { UI.error(this, new Exception("Selecciona una venta vigente.")); return; }
-        if (!contexto.autorizacion.configurada()) { UI.error(this, new Exception("Configura la contraseña en Administradores para autorizar cancelaciones.")); return; }
-        JPasswordField clave = new JPasswordField();
-        if (JOptionPane.showConfirmDialog(this, new Object[]{"Cancelar " + r.folio() + ". Contraseña de autorización:", clave},
-                "Cancelar venta", JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
-        char[] valor = clave.getPassword();
-        try { contexto.cancelarVenta(r.folio(), valor); } catch (Exception e) { UI.error(this, e); }
-        finally { Arrays.fill(valor, '\0'); }
+        if (r.tipo() != MovimientoInventario.Tipo.VENTA || r.cancelado()) { estado.setText("Selecciona una venta vigente."); return; }
+        if (!contexto.autorizacion.configurada()) { estado.setText("Configura la contraseña en Administradores para autorizar cancelaciones."); return; }
+        PanelCancelaciones.solicitar(this, contexto, r);
+        if (contexto.registros().stream().anyMatch(v -> v.folio().equals(r.folio()) && v.cancelado())) {
+            estado.setText("Venta " + r.folio() + " cancelada. Se conserva en el historial."); estado.setForeground(UI.VERDE);
+        }
     }
 }

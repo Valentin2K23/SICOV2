@@ -51,9 +51,16 @@ public final class PruebasSicov {
         v.cobro.sumar(n("300")); comprobar(!v.cobro.cubre(v.total()), "Pago parcial");
         v.cobro.sumar(n("500")); MovimientoInventario venta = v.confirmar(false);
         igual(venta.total(), "580"); igual(venta.recibido(), "800"); igual(venta.cambio(), "220");
-        comprobar(v.venta.vacia(), "Vacía carrito al guardar"); igual(v.cobro.recibido(), "0");
+        comprobar(!v.venta.vacia() && v.tieneTicketPendiente(), "Conserva carrito hasta cerrar ticket");
+        igual(v.cobro.recibido(), "800");
+        int registros = c.registros().size();
+        comprobar(v.confirmar(false).folio().equals(venta.folio()) && c.registros().size() == registros,
+                "Confirmar dos veces no duplica la venta");
+        v.cerrarTicket(); comprobar(v.venta.vacia() && !v.tieneTicketPendiente(), "Cerrar ticket inicia nueva venta");
+        igual(v.cobro.recibido(), "0");
         v.venta.agregar(leche, n("3")); var exacta = v.confirmar(true);
         igual(exacta.total(), "40"); igual(exacta.recibido(), "40"); igual(exacta.cambio(), "0");
+        v.cerrarTicket();
         v.venta.agregar(leche, n("1")); v.cobro.sumar(n("1"));
         boolean rechazo = false; try { v.confirmar(true); } catch (IllegalArgumentException e) { rechazo = true; }
         comprobar(rechazo, "Pago exacto solo sin efectivo"); v.cobro.limpiar(); v.venta.limpiar();

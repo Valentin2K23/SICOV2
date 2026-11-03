@@ -1,0 +1,12 @@
+Herramienta: image_gen__imagegen (generador integrado).
+Producto de ejemplo: HUEVO, código 0304.
+Archivo: huevo-ia.png
+
+Use case: product-mockup
+Asset type: square product thumbnail for a Mexican neighborhood grocery point-of-sale desktop application.
+Primary request: fresh white chicken eggs, six eggs arranged naturally in a small open kraft cardboard egg carton.
+Scene/backdrop: plain warm light cream seamless background.
+Style/medium: clean photorealistic catalogue product photography, natural eggshell and kraft paper textures.
+Composition/framing: square image, product centered and occupying about 80 percent of the frame, clear silhouette that remains recognizable at 64 by 64 pixels, three-quarter angle from slightly above.
+Lighting/mood: soft diffused studio light with subtle grounded shadow, friendly and warm.
+Constraints: only the eggs and their small carton; no brands, no text, no labels, no watermark, no hands, no other groceries.
