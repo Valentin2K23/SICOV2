@@ -1,30 +1,39 @@
 package com.sicov.servicio;
 
 import com.sicov.modelo.*;
+
 import java.math.*;
 import java.util.*;
 
+/**
+ * Calcula los importes del carrito aplicando paquetes completos sin reutilizar cantidades.
+ */
 public final class ServicioPromociones {
     public List<DetalleVenta> calcular(List<DetalleVenta> carrito, List<Promocion> promociones) {
         Map<String, DetalleVenta> productos = new LinkedHashMap<>();
         Map<String, BigDecimal> disponibles = new LinkedHashMap<>(), importes = new LinkedHashMap<>();
         Map<String, List<String>> etiquetas = new LinkedHashMap<>();
         for (DetalleVenta d : carrito) {
-            productos.put(d.codigo(), d); disponibles.put(d.codigo(), d.cantidad());
-            importes.put(d.codigo(), BigDecimal.ZERO); etiquetas.put(d.codigo(), new ArrayList<>());
+            productos.put(d.codigo(), d);
+            disponibles.put(d.codigo(), d.cantidad());
+            importes.put(d.codigo(), BigDecimal.ZERO);
+            etiquetas.put(d.codigo(), new ArrayList<>());
         }
-        // Una unidad solo participa en una promoción. Ante coincidencias, prioriza el mayor ahorro por paquete.
+        // Una unidad solo participa en una promoción. Ante coincidencias, prioriza el
+        // mayor ahorro por paquete.
         List<Promocion> ordenadas = promociones.stream().filter(Promocion::activa)
                 .filter(p -> productos.keySet().containsAll(p.componentes().keySet()))
                 .sorted(Comparator.<Promocion, BigDecimal>comparing(p -> ahorro(p, productos)).reversed()).toList();
         for (Promocion promo : ordenadas) {
-            if (ahorro(promo, productos).signum() <= 0) continue;
+            if (ahorro(promo, productos).signum() <= 0)
+                continue;
             BigDecimal veces = null;
             for (var c : promo.componentes().entrySet()) {
                 BigDecimal n = disponibles.get(c.getKey()).divide(c.getValue(), 0, RoundingMode.DOWN);
                 veces = veces == null ? n : veces.min(n);
             }
-            if (veces == null || veces.signum() == 0) continue;
+            if (veces == null || veces.signum() == 0)
+                continue;
             BigDecimal precioNormal = BigDecimal.ZERO;
             for (var c : promo.componentes().entrySet())
                 precioNormal = precioNormal.add(productos.get(c.getKey()).precio().multiply(c.getValue()));
@@ -34,6 +43,8 @@ public final class ServicioPromociones {
             for (var c : promo.componentes().entrySet()) {
                 restante--;
                 BigDecimal costo = productos.get(c.getKey()).precio().multiply(c.getValue());
+                // El último componente absorbe los centavos restantes para conservar el precio
+                // del paquete.
                 BigDecimal proporcion = restante == 0 ? porRepartir
                         : totalPaquetes.multiply(costo).divide(precioNormal, 2, RoundingMode.HALF_UP).min(porRepartir);
                 porRepartir = porRepartir.subtract(proporcion);
@@ -42,6 +53,7 @@ public final class ServicioPromociones {
                 etiquetas.get(c.getKey()).add(promo.nombre() + " · PROMOCIÓN - " + veces.toPlainString());
             }
         }
+        // Las cantidades fuera de los paquetes se cobran a su precio normal.
         List<DetalleVenta> resultado = new ArrayList<>();
         for (DetalleVenta d : carrito) {
             BigDecimal importe = importes.get(d.codigo()).add(d.precio().multiply(disponibles.get(d.codigo())))
@@ -51,9 +63,11 @@ public final class ServicioPromociones {
         }
         return resultado;
     }
+
     private BigDecimal ahorro(Promocion p, Map<String, DetalleVenta> productos) {
         BigDecimal normal = BigDecimal.ZERO;
-        for (var c : p.componentes().entrySet()) normal = normal.add(productos.get(c.getKey()).precio().multiply(c.getValue()));
+        for (var c : p.componentes().entrySet())
+            normal = normal.add(productos.get(c.getKey()).precio().multiply(c.getValue()));
         return normal.subtract(p.precio());
     }
 }

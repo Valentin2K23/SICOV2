@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profiles version="23">
+    <profile kind="CodeFormatterProfile" name="SICOV" version="23">
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
+        <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>
+        <setting id="org.eclipse.jdt.core.formatter.indentation.size" value="4"/>
+        <setting id="org.eclipse.jdt.core.formatter.lineSplit" value="120"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_imple_if_on_one_line" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.format_guardian_clause_on_one_line" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_then_statement_on_same_line" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_else_statement_on_same_line" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_simple_for_body_on_same_line" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_simple_while_body_on_same_line" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_simple_do_while_body_on_same_line" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_method_body_on_one_line" value="one_line_if_empty"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_simple_getter_setter_on_one_line" value="false"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_code_block_on_one_line" value="one_line_if_empty"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_lambda_body_block_on_one_line" value="one_line_if_empty"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_loop_body_block_on_one_line" value="one_line_if_empty"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_if_then_body_block_on_one_line" value="one_line_if_empty"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_switch_case_with_arrow_on_one_line" value="one_line_if_single_item"/>
+        <setting id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_method" value="insert"/>
+        <setting id="org.eclipse.jdt.core.formatter.comment.line_length" value="120"/>
+        <setting id="org.eclipse.jdt.core.formatter.indent_switchstatements_compare_to_switch" value="true"/>
+    </profile>
+</profiles>

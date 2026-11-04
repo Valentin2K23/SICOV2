@@ -1,5 +1,7 @@
 package com.sicov.modelo;
 
-/** Base para Venta. */
+/**
+ * Clase reservada; las ventas actuales se registran mediante MovimientoInventario.
+ */
 public class Venta {
 }

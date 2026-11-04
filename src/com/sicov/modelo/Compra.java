@@ -1,5 +1,7 @@
 package com.sicov.modelo;
 
-/** Base para Compra. */
+/**
+ * Clase reservada; las compras actuales se registran como movimientos de entrada.
+ */
 public class Compra {
 }

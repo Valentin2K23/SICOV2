@@ -1,5 +1,5 @@
 package com.sicov.controlador;
 
-/** Base para InventarioControlador. */
+/** Clase reservada, sin comportamiento implementado. */
 public class InventarioControlador {
 }

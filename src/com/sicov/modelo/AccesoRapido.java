@@ -1,5 +1,5 @@
 package com.sicov.modelo;
 
-/** Base para AccesoRapido. */
+/** Clase reservada, sin comportamiento implementado. */
 public class AccesoRapido {
 }

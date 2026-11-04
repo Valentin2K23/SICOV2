@@ -1,5 +1,7 @@
 package com.sicov.controlador;
 
-/** Base para ProductoControlador. */
+/**
+ * Clase reservada; la gestión del catálogo se realiza actualmente en ContextoAplicacion.
+ */
 public class ProductoControlador {
 }

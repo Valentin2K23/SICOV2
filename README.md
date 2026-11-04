@@ -102,6 +102,23 @@ Las instalaciones antiguas sin respuestas deben configurarlas con su contraseña
 En **Gestión → Cancelar ventas** puedes buscar por folio, filtrar ventas vigentes o canceladas y revisar el detalle completo antes de cancelar. Se pide un **motivo obligatorio** y la contraseña de administrador; el botón de cancelación exige una confirmación explícita. También puedes hacerlo desde Reportes con el mismo formulario. La venta permanece en el historial como CANCELADA, conserva sus importes y productos, guarda el motivo y queda excluida de los acumulados y del descuento de cantidades estimadas. Si aún no tienes contraseña, el botón **Configurar contraseña** abre Administradores.
 La administración completa de usuarios y permisos puede adaptarse al flujo que se defina después.
 
+## Organización del código
+
+| Ubicación | Responsabilidad |
+| --- | --- |
+| `src/com/sicov/App.java` | Inicia Swing y localiza la carpeta de datos. |
+| `controlador/` | Coordina las operaciones y el estado compartido por las pantallas. |
+| `modelo/` | Define productos, unidades, promociones y registros históricos. |
+| `servicio/` | Contiene las reglas de ventas, promociones, cobro, inventario y autorización. |
+| `persistencia/` | Lee y guarda los CSV, la configuración y las imágenes locales. |
+| `vista/` | Construye las pantallas Swing y conecta sus acciones con las operaciones del sistema. |
+| `tests/com/sicov/` | Verifica los flujos con carpetas temporales y permite revisar las pantallas. |
+
+El código usa cuatro espacios, sentencias separadas y métodos agrupados por responsabilidad.
+`.editorconfig` conserva las reglas básicas de escritura y `config/formato-java.xml` contiene el perfil de formato Java compatible con Eclipse.
+Los comentarios explican decisiones que deben conservarse: precisión de importes, cobro único, historial, escritura atómica y manejo de contraseñas.
+Las clases reservadas de la estructura inicial están señaladas como tales; los flujos activos se describen en sus clases correspondientes.
+
 ## Archivos y pruebas
 
 Los archivos activos son `productos.csv`, `categorias.csv`, `promociones.csv`, `compras.csv`, `ventas.csv`,

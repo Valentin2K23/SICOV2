@@ -1,5 +1,7 @@
 package com.sicov.modelo;
 
-/** Base para Administrador. */
+/**
+ * Clase reservada; las credenciales actuales se gestionan en el servicio Autorizacion.
+ */
 public class Administrador {
 }

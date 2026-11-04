@@ -1,5 +1,5 @@
 package com.sicov.persistencia;
 
-/** Base para RespaldoArchivos. */
+/** Clase reservada, sin comportamiento de respaldo implementado. */
 public class RespaldoArchivos {
 }
