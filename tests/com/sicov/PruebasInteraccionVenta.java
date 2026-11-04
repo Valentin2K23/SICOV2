@@ -172,8 +172,8 @@ public final class PruebasInteraccionVenta {
         cobro.efectivo.setText("20");
         comprobar(boton(cobro, "Confirmar pago y ver ticket").isEnabled(),
                 "Veinte pesos de efectivo cubren el huevo vendido por veinte pesos");
-        boton(cobro, "$20").doClick();
-        MovimientoInventario venta = controlador.confirmar(false);
+        boton(cobro, "Confirmar pago y ver ticket").doClick(0);
+        MovimientoInventario venta = controlador.ticketPendiente();
         comprobar(venta.total().compareTo(new BigDecimal("20.00")) == 0
                         && venta.recibido().compareTo(new BigDecimal("20.00")) == 0
                         && venta.cambio().signum() == 0,
@@ -186,6 +186,61 @@ public final class PruebasInteraccionVenta {
                         && guardada.total().compareTo(new BigDecimal("20.00")) == 0,
                 "Reabrir los archivos conserva el peso preciso y los veinte pesos cobrados");
     }
+    private static void probarConfirmacion() throws Exception {
+        Path directorio = Files.createTempDirectory("sicov-confirmacion-");
+        ContextoAplicacion contexto = new ContextoAplicacion(directorio);
+        contexto.guardarProducto(new Producto("CP", "Producto para cobro", new BigDecimal("25"),
+                "Abarrotes", UnidadVenta.PIEZA, false), false);
+        PanelVentas panel = new PanelVentas(contexto);
+        JTextField codigo = campo(panel, "codigo", JTextField.class);
+        VentaControlador controlador = campo(panel, "controlador", VentaControlador.class);
+        PanelCobro cobro = campo(panel, "cobro", PanelCobro.class);
+        JButton confirmar = boton(cobro, "Confirmar pago y ver ticket");
+        String[] formas = {"efectivo escrito", "billete", "importe exacto", "Enter"};
+        for (int i = 0; i < formas.length; i++) {
+            codigo.setText("CP"); codigo.postActionEvent();
+            if (i == 0) for (String efectivo : new String[]{"importe inválido", "24.99", "-1", "100.001"}) {
+                cobro.efectivo.setText(efectivo);
+                comprobar(!confirmar.isEnabled(), "El pago rechaza efectivo inválido o insuficiente: " + efectivo);
+                confirmar.doClick(0); cobro.efectivo.postActionEvent();
+                comprobar(contexto.registros().isEmpty() && !controlador.tieneTicketPendiente(),
+                        "Ni clic ni Enter registran una venta con efectivo inválido o insuficiente");
+            }
+            if (i == 1) boton(cobro, "$100").doClick(0);
+            else if (i == 2) boton(cobro, "Importe exacto").doClick(0);
+            else cobro.efectivo.setText("100");
+            comprobar(confirmar.isEnabled() && contexto.registros().size() == i && !controlador.tieneTicketPendiente(),
+                    "Capturar " + formas[i] + " habilita confirmar sin registrar todavía la venta");
+            if (i == 3) cobro.efectivo.postActionEvent();
+            else confirmar.doClick(0);
+            comprobar(contexto.registros().size() == i + 1 && controlador.tieneTicketPendiente(),
+                    "La confirmación real con " + formas[i] + " guarda la venta y prepara el ticket");
+            MovimientoInventario venta = controlador.ticketPendiente();
+            BigDecimal recibido = new BigDecimal(i == 2 ? "25" : "100");
+            comprobar(venta.total().compareTo(new BigDecimal("25")) == 0
+                            && venta.recibido().compareTo(recibido) == 0
+                            && venta.cambio().compareTo(recibido.subtract(venta.total())) == 0,
+                    "El ticket conserva el total, efectivo y cambio del pago con " + formas[i]);
+            String ticket = PanelTicket.texto(venta);
+            comprobar(ticket.contains(venta.folio()) && ticket.contains("Producto para cobro")
+                            && ticket.contains("TOTAL:    $25.00")
+                            && ticket.contains("EFECTIVO: " + UI.dinero(recibido))
+                            && ticket.contains("CAMBIO:   " + UI.dinero(venta.cambio())),
+                    "El ticket muestra los datos de la venta confirmada con " + formas[i]);
+            confirmar.doClick(0); cobro.efectivo.postActionEvent();
+            comprobar(contexto.registros().size() == i + 1
+                            && controlador.ticketPendiente().folio().equals(venta.folio()),
+                    "Repetir clic o Enter conserva una sola venta y el mismo ticket");
+            MovimientoInventario guardada = new ContextoAplicacion(directorio).registros().get(i);
+            comprobar(guardada.folio().equals(venta.folio())
+                            && guardada.recibido().compareTo(recibido) == 0
+                            && guardada.cambio().compareTo(venta.cambio()) == 0,
+                    "El pago con " + formas[i] + " queda guardado al reabrir los archivos");
+            controlador.cerrarTicket();
+            comprobar(controlador.venta.vacia() && !controlador.tieneTicketPendiente(),
+                    "Cerrar el ticket permite comenzar la siguiente venta");
+        }
+    }
     public static void main(String[] args) throws Exception {
         ContextoAplicacion contexto = new ContextoAplicacion(Files.createTempDirectory("sicov-interacciones-"));
         contexto.guardarProducto(new Producto("123", "Leche", new BigDecimal("25"), "Lácteos", UnidadVenta.PIEZA, false), false);
@@ -194,6 +249,7 @@ public final class PruebasInteraccionVenta {
             try {
                 probarGranel();
                 probarImporte();
+                probarConfirmacion();
                 PanelVentas panel = new PanelVentas(contexto) {
                     @Override public boolean isShowing() { return true; }
                 };

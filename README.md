@@ -5,6 +5,7 @@ Aplicación de escritorio en Java 23 y Swing. Los datos se guardan localmente en
 ## Abrir el programa
 
 En Eclipse, actualiza el proyecto con F5 y ejecuta `src/com/sicov/App.java` como **Java Application**.
+Si aparece `NoClassDefFoundError` (por ejemplo, `ContextoAplicacion$1`), detén SICOV y usa **Project → Clean** con **Build Automatically** activado antes de volver a ejecutar. La carpeta `bin/` debe reconstruirse completa: las clases auxiliares generadas también son necesarias.
 
 También puedes abrir una terminal PowerShell en esta carpeta y ejecutar:
 
@@ -108,7 +109,8 @@ Los archivos activos son `productos.csv`, `categorias.csv`, `promociones.csv`, `
 Cada operación se guarda junto con sus detalles en un solo CSV, reemplazado de forma atómica cuando el sistema lo permite.
 Las otras clases y archivos de la estructura inicial quedan disponibles para ampliaciones.
 
-`probar.ps1` compila y verifica los cálculos, persistencia, cancelaciones, recuperación obligatoria con tres respuestas y conservación de una venta cuando falla el guardado.
+`compilar.ps1` genera las clases en una carpeta temporal limpia, comprueba que no falten dependencias y copia la compilación completa a `bin/` y al JAR.
+`probar.ps1` verifica esa misma compilación de `bin/`: cálculos, persistencia, cancelaciones, recuperación obligatoria con tres respuestas y conservación de una venta cuando falla el guardado.
 Las pruebas usan carpetas temporales y no agregan datos de demostración al catálogo real.
 `tests/com/sicov/VerificarPantallas.java` permite renderizar las pantallas con datos temporales para revisar 720p y 1080p.
 

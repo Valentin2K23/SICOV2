@@ -15,6 +15,7 @@ public final class VentaControlador {
         return ticketPendiente == null ? venta.calcular(contexto.promociones()) : ticketPendiente.detalles();
     }
     public boolean tieneTicketPendiente() { return ticketPendiente != null; }
+    public MovimientoInventario ticketPendiente() { return ticketPendiente; }
     public void cerrarTicket() {
         if (ticketPendiente == null) return;
         venta.limpiar(); cobro.limpiar(); ticketPendiente = null;

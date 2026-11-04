@@ -332,7 +332,7 @@ public class PanelVentas extends JPanel {
         cobro.actualizar(controlador.cobro.recibido(), controlador.total());
     }
     private void abrirCobro() {
-        if (controlador.venta.vacia() || dialogoCobro != null) return;
+        if (controlador.venta.vacia() || dialogoCobro != null || controlador.tieneTicketPendiente()) return;
         if (!codigo.getText().isBlank()) {
             mostrarAviso("Hay un código pendiente. Agrégalo con Enter o borra el campo antes de pagar."); enfocarCodigo(); return;
         }
@@ -366,9 +366,14 @@ public class PanelVentas extends JPanel {
             if (!controlador.tieneTicketPendiente()) controlador.cobro.limpiar();
             refrescar(); enfocarCodigo();
         }
+        // Termina el diálogo de pago antes de abrir otro diálogo modal.
+        if (controlador.tieneTicketPendiente()) {
+            try { mostrarTicket(controlador.ticketPendiente()); }
+            catch (Exception e) { UI.error(this, e); }
+        }
     }
     private void confirmar() {
-        if (confirmando) return;
+        if (confirmando || controlador.tieneTicketPendiente()) return;
         confirmando = true;
         try {
             if (!cobro.efectivo.getText().isBlank()) {
@@ -378,9 +383,8 @@ public class PanelVentas extends JPanel {
                 if (efectivo.signum() > 0) controlador.cobro.sumar(efectivo);
                 cobro.efectivo.setText("");
             }
-            var registro = controlador.confirmar(false); retirado = null; deshacer.setVisible(false);
+            controlador.confirmar(false); retirado = null; deshacer.setVisible(false);
             if (dialogoCobro != null) dialogoCobro.dispose();
-            mostrarTicket(registro);
         } catch (Exception e) { UI.error(this, e); }
         finally { confirmando = false; }
     }
