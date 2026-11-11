@@ -243,6 +243,7 @@ public final class PruebasImagenesProductos {
         Path temporal = Files.createTempDirectory("sicov-formulario-imagenes-");
         Path foto = crearImagen(temporal.resolve("queso.png"), 160, 120, "png", false);
         ContextoAplicacion contexto = new ContextoAplicacion(temporal.resolve("datos"));
+        contexto.guardarCategoria("Lácteos", "Lácteos");
         PanelCompras panel = new PanelCompras(contexto);
         campo(panel, "nombre", JTextField.class).setText("Queso fresco");
         campo(panel, "precio", JTextField.class).setText("120.00");

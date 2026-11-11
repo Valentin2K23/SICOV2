@@ -6,6 +6,7 @@ import java.util.Locale;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.*;
 
 /** Tema, componentes y formatos compartidos por las pantallas Swing. */
 public final class UI {
@@ -59,7 +60,7 @@ public final class UI {
             simbolo = unidad == com.sicov.modelo.UnidadVenta.KILOGRAMO ? "g" : "ml";
         }
         // Solo redondea el texto: los cálculos conservan la cantidad original.
-        BigDecimal visible = cantidad.setScale(3, RoundingMode.HALF_UP);
+        BigDecimal visible = cantidad.setScale(simbolo.equals("g") ? 0 : 3, RoundingMode.HALF_UP);
         return (cantidad.compareTo(visible) == 0 ? "" : "≈ ") + cantidad(visible) + " " + simbolo;
     }
 
@@ -136,6 +137,28 @@ public final class UI {
     public static void error(Component c, Exception e) {
         JOptionPane.showMessageDialog(c, e.getMessage() == null ? e.toString() : e.getMessage(), "SICOV",
                 JOptionPane.ERROR_MESSAGE);
+    }
+
+    /** Solo admite dígitos y un separador decimal, incluso al pegar o reemplazar texto. */
+    public static void soloNumeros(JTextField campo) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String texto, AttributeSet atributos)
+                    throws BadLocationException {
+                replace(fb, offset, 0, texto, atributos);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int longitud, String texto, AttributeSet atributos)
+                    throws BadLocationException {
+                String actual = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String nuevo = actual.substring(0, offset) + (texto == null ? "" : texto)
+                        + actual.substring(offset + longitud);
+                // Permite vaciar el campo y escribir el separador antes de completar el decimal.
+                if (nuevo.matches("[0-9]*([.,][0-9]*)?"))
+                    fb.replace(offset, longitud, texto, atributos);
+            }
+        });
     }
 
     /** Reacciona también a pegado y borrado, no solo a pulsaciones del teclado. */

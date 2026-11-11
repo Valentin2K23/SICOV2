@@ -24,8 +24,8 @@ Por ejemplo: productos → lista de categorías → menú de categorías → pan
 ## Primer uso
 
 1. En Gestión → Categorías → Configurar categorías, agrega el nombre y selecciona su sección.
-2. En Gestión → Compras, registra nombre, precio, código, categoría y unidad. También puedes escribir una categoría nueva directamente.
-3. En el catálogo de la derecha, escribe la cantidad a recibir y pulsa Enter. La palomita se marca automáticamente. Desmárcala si ese producto no debe incluirse.
+2. En Gestión → Compras, registra nombre, precio, categoría y unidad. La categoría se selecciona de las creadas en Gestión → Categorías. Escanea o escribe el código de barras; si el producto no tiene, marca **Sin código físico** y deja el código vacío: se asigna un identificador interno único, como **INT-000001**, al guardar.
+3. En la tarjeta de recepción de la derecha, busca un producto y escribe la cantidad recibida en su unidad (pza, kg o L). Pulsa Enter: la palomita se marca automáticamente. Desmárcala si ese producto no debe incluirse. El resumen cuenta todos los seleccionados, aunque estén ocultos por la búsqueda.
 4. Pulsa **Registrar recepción** para guardar los productos marcados bajo un folio de entrada.
 5. Regresa a Inicio para vender.
 
@@ -34,7 +34,7 @@ Por ejemplo: productos → lista de categorías → menú de categorías → pan
 - Escribe o escanea el código en `C:`. Un lector que funcione como teclado y envíe Enter puede agregarlo directamente.
 - `2530*3` agrega tres unidades. Repetir un código acumula su cantidad en la misma fila.
 - El último producto agregado queda seleccionado. La papelera o **Supr/Delete** lo retira; **Deshacer** permite recuperarlo. **+** y **−** ajustan una pieza, 100 g o 100 ml según la unidad. El editor inferior muestra gramos para productos por kilogramo y mililitros para productos por litro; Enter aplica y vuelve al campo de código.
-- Para productos a granel se abre una captura con gramos/kilos o mililitros/litros, botones de cantidades habituales y vista previa del importe. También puedes indicar cuántos pesos quiere llevar el cliente: se conserva la precisión al convertir a la unidad del catálogo y se redondea el cobro a centavos, respetando el importe capturado. Por ejemplo, **$20 de huevo a $38/kg** conserva **$20.00** en el carrito y el ticket. Las etiquetas abrevian la medida a tres decimales y usan **≈** si es aproximada; el editor conserva la cantidad completa para que confirmar o pagar no pierda centavos. **Editar cantidad** o doble clic en el carrito abre la misma captura; por pieza ofrece cantidades como 1, 6 o 12.
+- Para productos a granel se abre una captura con gramos/kilos o mililitros/litros, botones de cantidades habituales y vista previa del importe. También puedes indicar cuántos pesos quiere llevar el cliente: se conserva la precisión al convertir a la unidad del catálogo y se redondea el cobro a centavos, respetando el importe capturado. Por ejemplo, **$20 de huevo a $38/kg** conserva **$20.00** en el carrito y el ticket. Las etiquetas redondean los gramos a enteros y las demás medidas a tres decimales, y usan **≈** si son aproximadas; el editor junto a + y − muestra un máximo de dos decimales, conservando la cantidad exacta mientras no se edite para que confirmar o pagar no pierda centavos. **Editar cantidad** o doble clic en el carrito abre la misma captura; por pieza ofrece cantidades como 1, 6 o 12.
 - **A mano** muestra solo productos a granel (kilogramo o litro): tarjetas con foto o icono en dos columnas, hasta cuatro visibles y ocho al desplazarse. Las tarjetas aprovechan el espacio disponible y se adaptan a ventanas pequeñas. Se ordenan por el número de ventas vigentes que incluyen cada producto, contando una vez por venta, sin sumar peso ni importe; entradas, merma y ventas canceladas no cuentan. Los empates se ordenan por nombre y los productos aún sin ventas quedan al final. El orden se actualiza al registrar o cancelar ventas. Cada botón indica el precio por kilogramo o litro. No cambia la unidad de un producto por su nombre: registra el huevo como pieza o kilogramo según cómo lo vendas.
 - Un código desconocido muestra **Producto no encontrado** durante tres segundos, con X para cerrarlo.
 - **Buscar productos** o **B** abre el catálogo para buscar por nombre, código o categoría sin distinguir acentos. Hay filtros por categoría, a granel y sin código; ↑/↓ selecciona, Enter agrega y Esc cierra.
@@ -80,7 +80,7 @@ La tabla indica cuántos productos distintos hay registrados en cada categoría 
 **Guardar categoría** guarda la sección de una categoría existente o crea una nueva si se escribe otro nombre; después limpia el formulario.
 Las secciones disponibles son Repostería (galletas, pan y similares), Dulces, Bebidas, Refrescos, Lácteos,
 Salchichonería, Carnes, Tecnología, Farmacia, Higiene, Hogar, Snacks, Botana, Alcohol, Abarrotes, Helados, Tabacos y Juguetes.
-Las categorías anteriores y las creadas directamente en Compras se conservan como **Sin sección** hasta asignársela.
+Las categorías anteriores sin sección se conservan como **Sin sección** hasta asignársela. Las categorías nuevas se crean en Gestión → Categorías y se eligen de una lista en Compras.
 
 **Ver categorías** muestra las categorías creadas. Al seleccionar una se ven sus productos, códigos,
 unidades y cantidades estimadas, sin mostrar movimientos, folios ni importes de entradas y salidas.

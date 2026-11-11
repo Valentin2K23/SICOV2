@@ -195,9 +195,9 @@ public final class PruebasInteraccionVenta {
         codigo.postActionEvent();
         comprobar(controlador.total().compareTo(new BigDecimal("20.00")) == 0,
                 "Veinte pesos de huevo a 38 por kilo conservan los veinte pesos en el carrito");
-        comprobar(cantidad.getText().equals(UI.cantidad(peso.movePointRight(3))),
-                "El editor conserva todos los decimales del peso capturado por importe");
-        comprobar(UI.medida(peso, UnidadVenta.KILOGRAMO).equals("≈ 526.316 g"),
+        comprobar(cantidad.getText().equals("526.32"),
+                "El editor muestra el peso capturado por importe redondeado a dos decimales");
+        comprobar(UI.medida(peso, UnidadVenta.KILOGRAMO).equals("≈ 526 g"),
                 "La etiqueta aproxima el peso de forma legible sin modificar la cantidad editable");
         panel.activarAtajos(false);
         comprobar(
@@ -212,6 +212,14 @@ public final class PruebasInteraccionVenta {
                 detalle(controlador, "HP").cantidad().compareTo(peso) == 0
                         && controlador.total().compareTo(new BigDecimal("20.00")) == 0,
                 "Confirmar el editor sin cambios conserva el peso y los veinte pesos completos");
+        atajo(panel, codigo, KeyEvent.VK_ADD, '+', 0).run();
+        comprobar(detalle(controlador, "HP").cantidad().compareTo(peso.add(new BigDecimal("0.100"))) == 0
+                && cantidad.getText().equals("626.32"),
+                "+ suma cien gramos al peso preciso y muestra solo dos decimales");
+        atajo(panel, codigo, KeyEvent.VK_MINUS, '-', 0).run();
+        comprobar(detalle(controlador, "HP").cantidad().compareTo(peso) == 0
+                && controlador.total().compareTo(new BigDecimal("20.00")) == 0,
+                "Restar los cien gramos recupera el peso y el importe exactos");
         lista.setSize(700, 100);
         papelera(lista);
         comprobar(controlador.venta.vacia(), "Eliminar el huevo retira su importe del carrito");

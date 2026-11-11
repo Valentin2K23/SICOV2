@@ -9,9 +9,11 @@ import com.sicov.vista.ImagenProducto;
 import com.sicov.vista.UI;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -26,6 +28,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -43,6 +46,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableRowSorter;
 
 /**
@@ -57,12 +61,14 @@ public class PanelCompras extends JPanel {
     private final JComboBox<String> categoria = new JComboBox<>();
     private final JComboBox<UnidadVenta> unidad = new JComboBox<>(UnidadVenta.values());
     private final JCheckBox sinCodigo = new JCheckBox("Sin código físico");
+    private final JLabel tituloFormulario = new JLabel("Nuevo producto"), codigoEtiqueta = new JLabel("Código de barras");
+    private final JLabel ayudaCodigo = UI.discreto("Escanea o escribe el código del empaque.");
     private boolean editando;
     private Path imagenElegida;
     private boolean quitarImagen;
     private final JLabel vistaImagen = new JLabel(), estadoImagen = UI.discreto("Icono de categoría");
-    private final JLabel precioEtiqueta = new JLabel("Precio de venta por pieza");
-    private final JLabel ayudaUnidad = UI.discreto("Pieza: huevos sueltos, latas y paquetes.");
+    private final JLabel precioEtiqueta = new JLabel("Precio por pieza");
+    private final JLabel ayudaUnidad = UI.discreto("Recepción en piezas completas.");
 
     // El borrador de recepción se conserva por código aunque cambie el filtro de la
     // tabla.
@@ -71,43 +77,75 @@ public class PanelCompras extends JPanel {
     private final Set<String> confirmados = new LinkedHashSet<>();
     private List<Producto> productos = List.of();
     private final ModeloRecepcion modelo = new ModeloRecepcion();
-    private final JTable tabla = new JTable(modelo);
+    private final JTable tabla = new JTable(modelo) {
+        @Override
+        public Component prepareRenderer(TableCellRenderer renderer, int fila, int columna) {
+            Component celda = super.prepareRenderer(renderer, fila, columna);
+            Producto producto = productos.get(convertRowIndexToModel(fila));
+            celda.setBackground(isRowSelected(fila) ? UI.SUAVE
+                    : confirmados.contains(producto.codigo()) ? new Color(241, 247, 239)
+                            : fila % 2 == 0 ? Color.WHITE : new Color(250, 251, 248));
+            celda.setForeground(UI.TEXTO);
+            return celda;
+        }
+    };
     private final TableRowSorter<ModeloRecepcion> filtro = new TableRowSorter<>(modelo);
     private final JLabel estado = new JLabel("Selecciona las cantidades que realmente recibiste.");
+    private final JLabel resumenRecepcion = new JLabel("Sin productos seleccionados");
+    private final JLabel ayudaCatalogo = UI.discreto(" ");
+    private final JButton registrarRecepcion = UI.primario("Registrar recepción", this::recibir);
+    private final JButton editarSeleccionado = UI.boton("Editar seleccionado", this::editar);
 
     public PanelCompras(ContextoAplicacion contexto) {
         super(new BorderLayout());
         this.contexto = contexto;
         JPanel pagina = UI.pagina("Compras · recepción de productos");
+        JPanel tarjetaProducto = UI.tarjeta();
+        tarjetaProducto.add(encabezado("1 · CATÁLOGO", tituloFormulario, ""), BorderLayout.NORTH);
         JPanel formulario = new JPanel();
         formulario.setLayout(new BoxLayout(formulario, BoxLayout.Y_AXIS));
-        formulario.setBorder(BorderFactory.createTitledBorder("Registrar producto"));
-        categoria.setEditable(true);
+        formulario.setBackground(Color.WHITE);
+        formulario.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 6));
+        categoria.setEditable(false);
+        categoria.setToolTipText("Selecciona una categoría creada en Gestión → Categorías.");
+        for (JTextField campo : new JTextField[] { nombre, precio, codigo, buscar })
+            campo.setMargin(new java.awt.Insets(8, 10, 8, 10));
         formulario.add(UI.campo("Nombre", nombre));
         formulario.add(Box.createVerticalStrut(8));
+        formulario.add(UI.campo("Categoría", categoria));
+        formulario.add(UI.discreto("Categorías: Gestión → Categorías"));
+        formulario.add(Box.createVerticalStrut(10));
         JPanel campoPrecio = new JPanel(new BorderLayout(5, 5));
         campoPrecio.setOpaque(false);
         campoPrecio.add(precioEtiqueta, BorderLayout.NORTH);
         campoPrecio.add(precio);
         campoPrecio.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
-        formulario.add(campoPrecio);
-        formulario.add(Box.createVerticalStrut(8));
-        formulario.add(UI.campo("Código · manual o escáner", codigo));
-        formulario.add(Box.createVerticalStrut(8));
-        formulario.add(UI.campo("Categoría", categoria));
-        formulario.add(Box.createVerticalStrut(8));
-        formulario.add(UI.campo("Se vende por", unidad));
+        JPanel datosVenta = new JPanel(new GridLayout(1, 2, 10, 0));
+        datosVenta.setOpaque(false);
+        datosVenta.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+        datosVenta.add(campoPrecio);
+        datosVenta.add(UI.campo("Se vende por", unidad));
+        formulario.add(datosVenta);
+        formulario.add(Box.createVerticalStrut(4));
         formulario.add(ayudaUnidad);
-        formulario.add(Box.createVerticalStrut(6));
+        formulario.add(Box.createVerticalStrut(8));
+        JPanel campoCodigo = new JPanel(new BorderLayout(5, 5));
+        campoCodigo.setOpaque(false);
+        campoCodigo.add(codigoEtiqueta, BorderLayout.NORTH);
+        campoCodigo.add(codigo);
+        campoCodigo.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+        sinCodigo.setOpaque(false);
         formulario.add(sinCodigo);
+        formulario.add(campoCodigo);
+        formulario.add(ayudaCodigo);
+        sinCodigo.addItemListener(e -> actualizarCodigo());
         unidad.addActionListener(e -> {
             UnidadVenta seleccion = (UnidadVenta) unidad.getSelectedItem();
-            precioEtiqueta.setText("Precio de venta por " + (seleccion == UnidadVenta.KILOGRAMO ? "kilogramo"
-                    : seleccion == UnidadVenta.LITRO ? "litro" : "pieza"));
-            ayudaUnidad.setText(seleccion == UnidadVenta.KILOGRAMO
-                    ? "<html>Kilogramo: jamón, queso o huevo por peso.<br>En Ventas podrás capturar gramos.</html>"
-                    : seleccion == UnidadVenta.LITRO ? "Litro: productos servidos a granel."
-                            : "Pieza: huevos sueltos, latas y paquetes.");
+            precioEtiqueta.setText("Precio por " + (seleccion == UnidadVenta.KILOGRAMO ? "kg"
+                    : seleccion == UnidadVenta.LITRO ? "L" : "pieza"));
+            ayudaUnidad.setText(seleccion == UnidadVenta.KILOGRAMO ? "Recepción en kg: 500 g = 0.5 kg."
+                    : seleccion == UnidadVenta.LITRO ? "Recepción en L: 500 ml = 0.5 L."
+                            : "Recepción en piezas completas.");
             if (!editando && seleccion != UnidadVenta.PIEZA)
                 sinCodigo.setSelected(true);
         });
@@ -130,19 +168,30 @@ public class PanelCompras extends JPanel {
         formulario.add(Box.createVerticalStrut(10));
         formulario.add(imagen);
         formulario.add(Box.createVerticalStrut(10));
-        formulario.add(UI.boton("Guardar producto", this::guardar));
-        formulario.add(Box.createVerticalStrut(6));
-        formulario.add(UI.boton("Limpiar / nuevo", this::limpiar));
         formulario.add(Box.createVerticalGlue());
-        sinCodigo.setToolTipText("Disponible en el botón Buscar mercancía de Ventas.");
+        sinCodigo.setToolTipText("No necesitas código de barras. Se asigna un código interno al guardar.");
         for (Component componente : formulario.getComponents())
             if (componente instanceof JComponent jc)
                 jc.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JPanel catalogo = new JPanel(new BorderLayout(8, 8));
-        catalogo.add(UI.campo("Buscar por nombre o código · el escáner también funciona aquí", buscar),
-                BorderLayout.NORTH);
+        JPanel catalogo = UI.tarjeta();
+        JPanel cabeceraCatalogo = new JPanel(new BorderLayout(0, 14));
+        cabeceraCatalogo.setOpaque(false);
+        cabeceraCatalogo.add(encabezado("2 · RECEPCIÓN", new JLabel("Mercancía recibida"),
+                "Escribe la cantidad recibida; la casilla se marca automáticamente."), BorderLayout.NORTH);
+        cabeceraCatalogo.add(UI.campo("Buscar por nombre, código o categoría", buscar));
+        cabeceraCatalogo.add(ayudaCatalogo, BorderLayout.SOUTH);
+        buscar.setToolTipText("Escribe para filtrar o escanea un código y pulsa Enter para capturar su cantidad.");
+        catalogo.add(cabeceraCatalogo, BorderLayout.NORTH);
         tabla.setRowSorter(filtro);
-        tabla.setRowHeight(48);
+        tabla.setRowHeight(62);
+        tabla.setShowVerticalLines(false);
+        tabla.setGridColor(UI.BORDE);
+        tabla.setIntercellSpacing(new Dimension(0, 1));
+        tabla.setFillsViewportHeight(true);
+        tabla.setBackground(Color.WHITE);
+        tabla.getTableHeader().setReorderingAllowed(false);
+        tabla.getTableHeader().setFont(tabla.getFont().deriveFont(Font.BOLD, 12f));
+        tabla.getTableHeader().setPreferredSize(new Dimension(0, 38));
         tabla.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable tabla, Object valor, boolean seleccion, boolean foco,
@@ -150,6 +199,9 @@ public class PanelCompras extends JPanel {
                 JLabel celda = (JLabel) super.getTableCellRendererComponent(tabla, valor, seleccion, foco, fila,
                         columna);
                 Producto p = productos.get(tabla.convertRowIndexToModel(fila));
+                celda.setText("<html><b>" + UI.html(p.nombre()) + "</b><br><font color='#6c776e'>"
+                        + UI.html(p.codigo()) + " · " + UI.html(p.unidad().toString()) + "</font></html>");
+                celda.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
                 celda.setIcon(ImagenProducto.icono(p, contexto.imagenProducto(p.codigo()),
                         contexto.seccionCategoria(p.categoria()), 36));
                 celda.setIconTextGap(8);
@@ -161,34 +213,74 @@ public class PanelCompras extends JPanel {
         tabla.getColumnModel().getColumn(0).setPreferredWidth(330);
         tabla.getColumnModel().getColumn(2).setPreferredWidth(140);
         tabla.getColumnModel().getColumn(3).setMaxWidth(65);
+        tabla.getColumnModel().getColumn(2).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable tabla, Object valor, boolean seleccion, boolean foco,
+                    int fila, int columna) {
+                JLabel celda = (JLabel) super.getTableCellRendererComponent(tabla, valor, seleccion, foco, fila,
+                        columna);
+                Producto p = productos.get(tabla.convertRowIndexToModel(fila));
+                celda.setText((valor.toString().isBlank() ? "—" : valor.toString()) + " " + p.unidad().simbolo());
+                celda.setHorizontalAlignment(JLabel.RIGHT);
+                celda.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 12));
+                return celda;
+            }
+        });
         JTextField editorRecepcion = new JTextField();
         tabla.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(editorRecepcion));
         editorRecepcion.addActionListener(e -> SwingUtilities.invokeLater(() -> {
             buscar.requestFocusInWindow();
             buscar.selectAll();
         }));
-        catalogo.add(new JScrollPane(tabla), BorderLayout.CENTER);
-        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        acciones.add(UI.boton("Editar seleccionado", this::editar));
-        acciones.add(UI.boton("Registrar recepción", this::recibir));
-        catalogo.add(acciones, BorderLayout.SOUTH);
+        JScrollPane listaProductos = new JScrollPane(tabla);
+        listaProductos.setBorder(BorderFactory.createLineBorder(UI.BORDE));
+        listaProductos.getViewport().setBackground(Color.WHITE);
+        catalogo.add(listaProductos, BorderLayout.CENTER);
+        JPanel pieCatalogo = new JPanel(new BorderLayout(0, 10));
+        pieCatalogo.setOpaque(false);
+        resumenRecepcion.setForeground(UI.VERDE);
+        resumenRecepcion.setFont(resumenRecepcion.getFont().deriveFont(Font.BOLD));
+        pieCatalogo.add(resumenRecepcion, BorderLayout.NORTH);
+        JPanel acciones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        acciones.setOpaque(false);
+        acciones.add(editarSeleccionado);
+        acciones.add(registrarRecepcion);
+        pieCatalogo.add(acciones);
+        catalogo.add(pieCatalogo, BorderLayout.SOUTH);
+        tabla.getSelectionModel().addListSelectionListener(e ->
+                editarSeleccionado.setEnabled(tabla.getSelectedRow() >= 0));
+        editarSeleccionado.setEnabled(false);
         JScrollPane desplazarFormulario = new JScrollPane(formulario);
         desplazarFormulario.setBorder(BorderFactory.createEmptyBorder());
         desplazarFormulario.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         desplazarFormulario.getVerticalScrollBar().setUnitIncrement(20);
-        JSplitPane division = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, desplazarFormulario, catalogo);
-        division.setResizeWeight(0.28);
-        division.setDividerLocation(310);
-        desplazarFormulario.setMinimumSize(new Dimension(285, 300));
+        tarjetaProducto.add(desplazarFormulario);
+        JPanel accionesProducto = new JPanel(new BorderLayout(8, 8));
+        accionesProducto.setOpaque(false);
+        accionesProducto.add(UI.primario("Guardar producto", this::guardar));
+        accionesProducto.add(UI.boton("Nuevo", this::limpiar), BorderLayout.EAST);
+        accionesProducto.add(UI.discreto("Guardar no registra una recepción."), BorderLayout.SOUTH);
+        tarjetaProducto.add(accionesProducto, BorderLayout.SOUTH);
+        JSplitPane division = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tarjetaProducto, catalogo);
+        division.setBorder(BorderFactory.createEmptyBorder());
+        division.setDividerSize(14);
+        division.setResizeWeight(0.30);
+        division.setDividerLocation(350);
+        tarjetaProducto.setMinimumSize(new Dimension(320, 300));
         catalogo.setMinimumSize(new Dimension(400, 300));
         pagina.add(division, BorderLayout.CENTER);
+        estado.setForeground(UI.VERDE);
+        estado.setFont(estado.getFont().deriveFont(12f));
         pagina.add(estado, BorderLayout.SOUTH);
         add(pagina);
         UI.enter(nombre, () -> precio.requestFocusInWindow());
         UI.enter(precio, () -> {
             try {
                 UI.numero(precio.getText());
-                codigo.requestFocusInWindow();
+                if (sinCodigo.isSelected())
+                    categoria.requestFocusInWindow();
+                else
+                    codigo.requestFocusInWindow();
             } catch (Exception e) {
                 UI.error(this, e);
             }
@@ -200,7 +292,36 @@ public class PanelCompras extends JPanel {
         UI.escuchar(codigo, this::actualizarImagen);
         contexto.escuchar(this::refrescar);
         refrescar();
+        actualizarCodigo();
         actualizarImagen();
+    }
+
+    private JPanel encabezado(String paso, JLabel titulo, String descripcion) {
+        JPanel panel = new JPanel(new BorderLayout(0, 6));
+        panel.setOpaque(false);
+        JLabel etiqueta = UI.discreto(paso);
+        etiqueta.setForeground(UI.VERDE);
+        etiqueta.setFont(etiqueta.getFont().deriveFont(Font.BOLD, 11f));
+        panel.add(etiqueta, BorderLayout.NORTH);
+        titulo.setFont(titulo.getFont().deriveFont(Font.BOLD, 19f));
+        titulo.setForeground(UI.TEXTO);
+        panel.add(titulo);
+        if (!descripcion.isBlank())
+            panel.add(UI.discreto("<html>" + UI.html(descripcion) + "</html>"), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    private void actualizarCodigo() {
+        boolean interno = sinCodigo.isSelected();
+        codigoEtiqueta.setText(interno ? "Código interno" : "Código de barras");
+        codigo.setEnabled(!interno);
+        codigo.setEditable(!editando && !interno);
+        ayudaCodigo.setText(interno
+                ? codigo.getText().isBlank() ? "<html>Se asignará al guardar.<br>No necesitas código de barras.</html>"
+                        : "<html>Se conserva el código interno<br>de este producto.</html>"
+                : editando ? "<html>El código identifica este producto<br>y se conserva.</html>"
+                        : "Escanea o escribe el código del empaque.");
+        tituloFormulario.setText(editando ? "Editar producto" : "Nuevo producto");
     }
 
     private void elegirImagen() {
@@ -222,7 +343,7 @@ public class PanelCompras extends JPanel {
     }
 
     private void actualizarImagen() {
-        Object cat = categoria.isEditable() ? categoria.getEditor().getItem() : categoria.getSelectedItem();
+        Object cat = categoria.getSelectedItem();
         String nombreCategoria = cat == null || cat.toString().isBlank() ? "Sin categoría" : cat.toString();
         Producto vista = new Producto("vista", "Vista previa", BigDecimal.ZERO, nombreCategoria, UnidadVenta.PIEZA,
                 false);
@@ -253,6 +374,17 @@ public class PanelCompras extends JPanel {
                 return (p.nombre() + " " + p.codigo() + " " + p.categoria()).toLowerCase(Locale.ROOT).contains(texto);
             }
         });
+        ayudaCatalogo.setText(productos.isEmpty() ? "<html>Aún no hay productos. Guarda el primero en el formulario.</html>"
+                : tabla.getRowCount() == 0 ? "No hay productos que coincidan con la búsqueda."
+                        : tabla.getRowCount() + " productos · Cantidades en pza, kg o L según el producto.");
+        actualizarResumen();
+    }
+
+    private void actualizarResumen() {
+        int total = confirmados.size();
+        resumenRecepcion.setText(total == 0 ? "Sin productos seleccionados"
+                : total + (total == 1 ? " producto listo para recibir" : " productos listos para recibir"));
+        registrarRecepcion.setEnabled(total > 0);
     }
 
     private void buscarCodigo() {
@@ -275,10 +407,19 @@ public class PanelCompras extends JPanel {
 
     private void guardar() {
         try {
-            Object cat = categoria.getEditor().getItem();
-            Producto p = new Producto(codigo.getText(), nombre.getText(), UI.numero(precio.getText()),
-                    cat == null ? "" : cat.toString(), (UnidadVenta) unidad.getSelectedItem(), sinCodigo.isSelected());
+            Object cat = categoria.getSelectedItem();
+            if (cat == null || !contexto.categorias().contains(cat.toString()))
+                throw new IllegalArgumentException("Selecciona una categoría. Puedes crearla en Gestión → Categorías.");
+            String identificador = codigo.getText().strip();
+            if (identificador.isEmpty()) {
+                if (!sinCodigo.isSelected())
+                    throw new IllegalArgumentException("Escribe el código de barras o marca Sin código físico.");
+                identificador = contexto.siguienteCodigoInterno();
+            }
+            Producto p = new Producto(identificador, nombre.getText(), UI.numero(precio.getText()),
+                    cat.toString(), (UnidadVenta) unidad.getSelectedItem(), sinCodigo.isSelected());
             contexto.guardarProducto(p, editando);
+            codigo.setText(p.codigo());
             // La imagen se guarda después del producto: si falla, se permite reintentar su
             // aplicación.
             try {
@@ -288,7 +429,7 @@ public class PanelCompras extends JPanel {
                     contexto.quitarImagenProducto(p.codigo());
             } catch (Exception imagenError) {
                 editando = true;
-                codigo.setEditable(false);
+                actualizarCodigo();
                 estado.setText("Producto guardado; falta aplicar su imagen. Reintenta Guardar producto.");
                 UI.error(this, imagenError);
                 return;
@@ -301,15 +442,15 @@ public class PanelCompras extends JPanel {
     }
 
     private void limpiar() {
+        editando = false;
         imagenElegida = null;
         quitarImagen = false;
         nombre.setText("");
         precio.setText("");
         codigo.setText("");
-        codigo.setEditable(true);
         unidad.setSelectedItem(UnidadVenta.PIEZA);
         sinCodigo.setSelected(false);
-        editando = false;
+        actualizarCodigo();
         actualizarImagen();
         nombre.requestFocusInWindow();
     }
@@ -319,6 +460,7 @@ public class PanelCompras extends JPanel {
         if (fila < 0)
             return;
         Producto p = productos.get(tabla.convertRowIndexToModel(fila));
+        editando = true;
         imagenElegida = null;
         quitarImagen = false;
         nombre.setText(p.nombre());
@@ -327,8 +469,7 @@ public class PanelCompras extends JPanel {
         categoria.setSelectedItem(p.categoria());
         unidad.setSelectedItem(p.unidad());
         sinCodigo.setSelected(p.sinCodigoFisico());
-        editando = true;
-        codigo.setEditable(false);
+        actualizarCodigo();
         actualizarImagen();
         nombre.requestFocusInWindow();
     }
@@ -348,6 +489,7 @@ public class PanelCompras extends JPanel {
                 cantidades.remove(c);
             confirmados.clear();
             modelo.fireTableDataChanged();
+            actualizarResumen();
             estado.setText("Recepción guardada · Folio " + registro.folio() + " · " + detalles.size() + " productos.");
         } catch (Exception e) {
             UI.error(this, e);
@@ -410,6 +552,7 @@ public class PanelCompras extends JPanel {
                 SwingUtilities.invokeLater(() -> UI.error(PanelCompras.this, e));
             }
             fireTableRowsUpdated(r, r);
+            actualizarResumen();
         }
     }
 }

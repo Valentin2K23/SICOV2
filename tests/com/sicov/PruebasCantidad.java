@@ -65,7 +65,7 @@ public final class PruebasCantidad {
         controlador.venta.agregar(huevo, medida);
         comprobar(controlador.total().compareTo(new BigDecimal("20.00")) == 0,
                 "Regresión: veinte pesos de huevo cuestan $20.00 en el carrito");
-        comprobar(UI.medida(medida, huevo.unidad()).equals("≈ 526.316 g"),
+        comprobar(UI.medida(medida, huevo.unidad()).equals("≈ 526 g"),
                 "La etiqueta muestra gramos aproximados sin alterar la cantidad de cálculo");
         controlador.cobro.sumar(new BigDecimal("20"));
         MovimientoInventario venta = controlador.confirmar(false);

@@ -56,6 +56,7 @@ public final class PanelCantidad extends JPanel {
         centro.add(modos, BorderLayout.NORTH);
         JPanel captura = new JPanel(new BorderLayout(10, 9));
         captura.setOpaque(false);
+        UI.soloNumeros(entrada);
         entrada.setFont(entrada.getFont().deriveFont(Font.BOLD, 34f));
         entrada.setMargin(new Insets(10, 12, 10, 12));
         entrada.getAccessibleContext().setAccessibleName("Cantidad del producto");

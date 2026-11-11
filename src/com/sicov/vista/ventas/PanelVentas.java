@@ -10,6 +10,7 @@ import com.sicov.vista.promociones.PanelPromociones;
 import java.awt.*;
 import java.awt.event.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import javax.swing.*;
 
@@ -56,6 +57,7 @@ public class PanelVentas extends JPanel {
     // Evita reaccionar a selecciones de refresco y a pulsaciones repetidas durante
     // el cobro.
     private boolean refrescando, consumirCaracter, confirmando, enterPresionado;
+    private boolean mostrandoCantidad, cantidadEditada;
     private boolean atajosActivos = true;
     private JDialog dialogoCobro, dialogoTicket;
     private final JButton pagar = UI.primario("Pagar", this::abrirCobro);
@@ -168,6 +170,7 @@ public class PanelVentas extends JPanel {
         controles.setOpaque(false);
         controles.add(UI.discreto("Cantidad"));
         controles.add(UI.boton("−", () -> ajustar(-1)));
+        UI.soloNumeros(cantidad);
         controles.add(cantidad);
         controles.add(unidadCantidad);
         controles.add(UI.boton("+", () -> ajustar(1)));
@@ -239,6 +242,10 @@ public class PanelVentas extends JPanel {
         add(estado, BorderLayout.SOUTH);
         UI.enter(codigo, this::agregarCodigo);
         UI.enter(cantidad, this::cambiarCantidad);
+        UI.escuchar(cantidad, () -> {
+            if (!mostrandoCantidad)
+                cantidadEditada = true;
+        });
         lista.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && !refrescando)
                 seleccionar();
@@ -460,8 +467,14 @@ public class PanelVentas extends JPanel {
         DetalleVenta d = lista.getSelectedValue();
         editorCantidad.setVisible(d != null);
         if (d != null) {
-            cantidad.setText(
-                    UI.cantidad(d.unidad() == UnidadVenta.PIEZA ? d.cantidad() : d.cantidad().movePointRight(3)));
+            BigDecimal visible = d.unidad() == UnidadVenta.PIEZA ? d.cantidad() : d.cantidad().movePointRight(3);
+            mostrandoCantidad = true;
+            try {
+                cantidad.setText(UI.cantidad(visible.setScale(2, RoundingMode.HALF_UP)));
+                cantidadEditada = false;
+            } finally {
+                mostrandoCantidad = false;
+            }
             unidadCantidad.setText(
                     d.unidad() == UnidadVenta.PIEZA ? "pzas" : d.unidad() == UnidadVenta.KILOGRAMO ? "g" : "ml");
             pasoCantidad.setText(d.unidad() == UnidadVenta.PIEZA ? "± 1 pieza"
@@ -480,6 +493,9 @@ public class PanelVentas extends JPanel {
     }
 
     private BigDecimal cantidadCapturada(DetalleVenta detalle) {
+        // Enter y Pagar conservan la precisión original si solo se mostró el redondeo.
+        if (!cantidadEditada)
+            return detalle.cantidad();
         BigDecimal valor = UI.numero(cantidad.getText());
         return detalle.unidad() == UnidadVenta.PIEZA ? valor : valor.movePointLeft(3);
     }

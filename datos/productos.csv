@@ -1,6 +1,7 @@
 codigo,nombre,precio,categoria,unidad,sin_codigo_fisico
 "900034","Agua mineral Peñafiel 2 L","35.00","AGUAS","PIEZA","false"
 "900035","Agua mineral Peñafiel Sifón 1.75 L","35.00","AGUAS","PIEZA","false"
+"0","Anbuegesa","50","BOTANA","PIEZA","true"
 "900009","Arroz La Posada 900 g","13.00","ARROZ Y CEREALES","PIEZA","false"
 "900006","Atún Dolores en aceite 130 g","18.50","ATUN Y CONSERVAS","PIEZA","false"
 "900005","Atún Dolores en agua 130 g","18.50","ATUN Y CONSERVAS","PIEZA","false"
@@ -26,6 +27,7 @@ codigo,nombre,precio,categoria,unidad,sin_codigo_fisico
 "900032","Frijoles refritos La Sierra Bayos 430 g","12.50","FRIJOLES","PIEZA","false"
 "900033","Frijoles refritos La Sierra Negros 430 g","12.50","FRIJOLES","PIEZA","false"
 "900022","Galletas Oreo Original charola 307.8 g","39.00","GALLETAS","PIEZA","false"
+"INT-000001","Hamburguesa hawaiana","55","BOTANA","PIEZA","true"
 "0304","HUEVO","38","FRUTAS Y VERDURAS","KILOGRAMO","true"
 "900044","Jabón Palmolive Naturals Aloe y Olive 120 g","20.00","JABONES","PIEZA","false"
 "900045","Jabón Palmolive Neutro Balance 120 g","30.00","JABONES","PIEZA","false"

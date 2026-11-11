@@ -38,11 +38,12 @@ public class VentanaPrincipal extends JFrame {
     public VentanaPrincipal(ContextoAplicacion contexto) {
         super("SICOV");
         setLayout(new BorderLayout());
-        JPanel cabecera = new JPanel(new BorderLayout(20, 0));
+        JPanel cabecera = new JPanel(new GridLayout(1, 3, 20, 0));
         cabecera.setBackground(UI.VERDE);
         JLabel marca = new JLabel("SICOV");
         marca.setForeground(Color.WHITE);
         marca.setFont(marca.getFont().deriveFont(Font.BOLD, 28f));
+        marca.setAlignmentX(Component.CENTER_ALIGNMENT);
         JPanel identidad = new JPanel();
         identidad.setLayout(new BoxLayout(identidad, BoxLayout.Y_AXIS));
         identidad.setOpaque(false);
@@ -50,12 +51,14 @@ public class VentanaPrincipal extends JFrame {
         JLabel descripcion = new JLabel("ABARROTES · PUNTO DE VENTA");
         descripcion.setFont(descripcion.getFont().deriveFont(10f));
         descripcion.setForeground(new Color(215, 230, 218));
+        descripcion.setAlignmentX(Component.CENTER_ALIGNMENT);
         identidad.add(descripcion);
-        cabecera.add(identidad);
         cabecera.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 3, 0, UI.DORADO),
                 BorderFactory.createEmptyBorder(14, 24, 14, 24)));
         JPanel accesos = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         accesos.setOpaque(false);
+        JPanel navegacion = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        navegacion.setOpaque(false);
         JLabel soporte = new JLabel("<html><small>Soporte técnico</small><br><b>5525972795</b></html>",
                 new IconoCabecera(true), SwingConstants.LEFT);
         soporte.setForeground(new Color(222, 234, 225));
@@ -65,9 +68,12 @@ public class VentanaPrincipal extends JFrame {
         botonGestion.setIcon(new IconoCabecera(false));
         botonGestion.setIconTextGap(8);
         botonGestion.setToolTipText("Abrir o cerrar el menú de Gestión");
-        accesos.add(botonVentas);
-        accesos.add(botonGestion);
-        cabecera.add(accesos, BorderLayout.EAST);
+        navegacion.add(botonGestion);
+        navegacion.add(botonVentas);
+        // Tres columnas iguales mantienen la marca centrada al mostrar Volver a ventas.
+        cabecera.add(navegacion);
+        cabecera.add(identidad);
+        cabecera.add(accesos);
         add(cabecera, BorderLayout.NORTH);
         ventas = new PanelVentas(contexto);
         contenido.add(ventas, "ventas");

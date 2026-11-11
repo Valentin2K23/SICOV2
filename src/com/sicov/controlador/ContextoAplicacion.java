@@ -69,6 +69,16 @@ public final class ContextoAplicacion {
         return productos.stream().filter(p -> p.codigo().equals(codigo.strip())).findFirst().orElse(null);
     }
 
+    /** Identificador para productos sin código de barras; no reserva ni modifica el catálogo. */
+    public String siguienteCodigoInterno() {
+        int numero = 1;
+        String codigo;
+        do {
+            codigo = String.format(Locale.ROOT, "INT-%06d", numero++);
+        } while (producto(codigo) != null);
+        return codigo;
+    }
+
     public Path imagenProducto(String codigo) {
         return archivoImagenes.imagen(codigo == null ? null : codigo.strip());
     }
